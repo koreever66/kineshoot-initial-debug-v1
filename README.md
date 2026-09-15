@@ -4,6 +4,15 @@
 
 不包含此前的项目计划书、商业计划、比赛报名资料和商品采购截图。
 
+## 当前软件入口
+
+- 软件仓库：`https://github.com/koreever66/kineshoot-initial-debug-v2`
+- 软件分支：`codex/software-data`
+- 软件提交：`eaf0e02f5c7a5d5046c68f914c662767ae544779`
+- 当前基线：`KB-2026-09-15-H1-F4-I1`
+
+本硬件仓库中的 `legacy/` 只保留旧 v1 固件、工具和数据，不用于当前采集。
+
 ## 当前基线
 
 ```text
