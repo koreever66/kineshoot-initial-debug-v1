@@ -78,7 +78,7 @@ reference/software-baseline/ 软件固定提交的只读参考文件
 
 ## 下一步
 
-1. 购买 1 个 TPS61088 固定 5V 2A 模块和 1 个带 EN/CTRL 的成品 P-MOS 高边模块；不再购买 AO3415、100k 和 1k。
+1. 购买 1 个 TPS61088 固定 5V 2A 模块；P-MOS 高边模块必须明确支持 3.0-4.2V，F5305S 5-36V 模块已排除。
 2. 按 `docs/hardware/H2_HANDOFF.md` 焊接 PH2.0 和柔性线束。
 3. 固定 NCS=3V3、AD0=GND，验证 `0x68` 和 `WHO_AM_I=0xEA`。
 4. 完成供电链、腕部固定和前臂固定。
