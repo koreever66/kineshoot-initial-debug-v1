@@ -45,6 +45,7 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/H2_BOM.csv`
 - `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `docs/hardware/ORDER_RECEIPTS_2026-09-15.md`
+- `docs/hardware/DAILY_DEBUG_SUMMARY_2026-09-16.md`
 - `reference/software-baseline/`
 
 ## 当前硬件
