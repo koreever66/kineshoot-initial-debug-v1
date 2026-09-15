@@ -4,6 +4,38 @@
 
 不包含此前的项目计划书、商业计划、比赛报名资料和商品采购截图。
 
+## 当前基线
+
+```text
+software_baseline_id = KB-2026-09-15-H1-F4-I1
+software_repository  = koreever66/kineshoot-initial-debug-v2
+software_branch      = codex/software-data
+software_commit      = eaf0e02f5c7a5d5046c68f914c662767ae544779
+interface_revision   = I1
+hardware_revision    = H2
+```
+
+当前硬件接口：
+
+```text
+VCC  -> 3V3
+GND  -> GND
+SDA  -> GPIO8
+SCL  -> GPIO9
+NCS  -> 3V3
+AD0  -> GND
+I2C address = 0x68
+I2C clock   = 50kHz
+WHO_AM_I    = 0xEA
+```
+
+详细说明见：
+
+- `docs/hardware/SOFTWARE_BASELINE.md`
+- `docs/hardware/H2_HANDOFF.md`
+- `docs/hardware/H2_BOM.csv`
+- `reference/software-baseline/`
+
 ## 当前硬件
 
 - ESP32-S3-DevKitC-1，N16R8
@@ -22,20 +54,24 @@ data/                       原始 CSV 数据
 plots/                      CSV 生成的曲线图
 photos/                     焊接和面包板接线照片
 DEBUG_NOTES.md              问题、解决思路和结果记录
+docs/hardware/              H2 固定接口、BOM、装配和测试方案
+reference/software-baseline/ 软件固定提交的只读参考文件
 ```
 
-## 当前结论
+## 当前状态
 
-- ESP32-S3 能正常烧录，电脑识别端口为 `COM5`。
-- ICM-20948 的 I2C 地址扫描出现过 `0x68`、`0x69` 和 `0x0C`。
-- 稳定有效的 ICM-20948 地址是 `0x69`。
-- 采集固件已改为自动尝试 `0x68` 和 `0x69`。
-- I2C 时钟已从 `400kHz` 降到 `100kHz`，以提高面包板接线稳定性。
+- 面包板阶段已经完成 ESP32-S3 与 ICM-20948 通信验证。
+- 历史阶段出现过 `0x68`、`0x69`、`0x0C` 和 `100kHz`，这些不再作为当前实现目标。
+- 当前接口固定为 `0x68`、`50kHz`、`WHO_AM_I=0xEA`。
+- 当前软件基线为 F4，使用 10 秒 RAM 记录、LittleFS 批量写入和 BOOT 键触发。
+- H2 采购和装配方案已开始；部分物料已购买，3.7V 转 5V 升压模块仍需补齐。
+- H2 实物、照片、万用表和静止/动态测试尚未全部完成。
 
-## 明日继续
+## 下一步
 
-1. 重新上传最新的 `imu_csv_logger.ino`。
-2. 查看串口是否出现 `IMU_READY`。
-3. 固定传感器、线束和 USB 线，避免接线松动。
-4. 重新采集 30 秒数据。
-5. 检查温度、采样连续性和是否出现固定饱和值。
+1. 补齐 3.7V 转 5V 升压模块和万用表检查条件。
+2. 按 `docs/hardware/H2_HANDOFF.md` 焊接 PH2.0 和柔性线束。
+3. 固定 NCS=3V3、AD0=GND，验证 `0x68` 和 `WHO_AM_I=0xEA`。
+4. 完成供电链、腕部固定和前臂固定。
+5. 完成 10 秒静止测试和小幅动态测试。
+6. 提交 H2 照片、测试结果和已知风险。
