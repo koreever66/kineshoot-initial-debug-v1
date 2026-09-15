@@ -43,6 +43,7 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/SOFTWARE_BASELINE.md`
 - `docs/hardware/H2_HANDOFF.md`
 - `docs/hardware/H2_BOM.csv`
+- `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `reference/software-baseline/`
 
 ## 当前硬件
