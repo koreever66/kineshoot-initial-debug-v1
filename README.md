@@ -47,11 +47,11 @@ WHO_AM_I    = 0xEA
 ## 目录
 
 ```text
-firmware/imu_plotter/       串口实时曲线固件
-firmware/imu_csv_logger/    CSV 数据采集固件
-tools/                      串口采集和 CSV 绘图脚本
-data/                       原始 CSV 数据
-plots/                      CSV 生成的曲线图
+legacy/firmware-v1/imu_plotter/     早期串口实时曲线固件
+legacy/firmware-v1/imu_csv_logger/  早期 CSV 数据采集固件
+legacy/tools-v1/                    早期串口采集和 CSV 绘图脚本
+legacy/data-v1/                     早期原始 CSV 数据
+legacy/plots-v1/                    早期 CSV 生成的曲线图
 photos/                     焊接和面包板接线照片
 DEBUG_NOTES.md              问题、解决思路和结果记录
 docs/hardware/              H2 固定接口、BOM、装配和测试方案
