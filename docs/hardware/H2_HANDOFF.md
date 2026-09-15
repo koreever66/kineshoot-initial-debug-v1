@@ -11,6 +11,12 @@ hardware_branch    = codex/hardware-bringup
 
 当前状态：H2 采购和装配方案已建立，实物尚未完成最终装配和测试。本文档中的“通过”必须在真实测量和照片完成后才能勾选。
 
+```text
+H2 status = assembling_and_verification
+```
+
+H2 不能标记为完成。
+
 ## 1. 硬件边界
 
 本仓库只负责：
@@ -35,8 +41,8 @@ hardware_branch    = codex/hardware-bringup
 ```text
 ICM VCC  -> ESP32 3V3
 ICM GND  -> ESP32 GND
-ICM SDA  -> ESP32 GPIO8
-ICM SCL  -> ESP32 GPIO9
+ICM SDI/SDA  -> ESP32 GPIO8
+ICM SCLK/SCL -> ESP32 GPIO9
 ICM NCS  -> ESP32 3V3
 ICM AD0  -> ESP32 GND
 
@@ -59,8 +65,8 @@ WHO_AM_I    = 0xEA
 ```text
 Pin 1 = VCC = 3V3
 Pin 2 = GND = 公共地
-Pin 3 = SDA = GPIO8
-Pin 4 = SCL = GPIO9
+Pin 3 = ICM SDI/SDA = GPIO8
+Pin 4 = ICM SCLK/SCL = GPIO9
 ```
 
 ICM 端就近固定：
@@ -78,8 +84,8 @@ NCS 和 AD0 固定后不需要 6P 连接器。4P 线长优先 10 到 15cm，最�
                          +----------------+
 ESP32-S3 3V3 -----------| PH2.0 4P Pin 1 |-------- ICM VCC
 ESP32-S3 GND -----------| PH2.0 4P Pin 2 |-------- ICM GND
-ESP32-S3 GPIO8 ---------| PH2.0 4P Pin 3 |-------- ICM SDA
-ESP32-S3 GPIO9 ---------| PH2.0 4P Pin 4 |-------- ICM SCL
+ESP32-S3 GPIO8 ---------| PH2.0 4P Pin 3 |-------- ICM SDI/SDA
+ESP32-S3 GPIO9 ---------| PH2.0 4P Pin 4 |-------- ICM SCLK/SCL
 
 ESP32-S3 3V3 ------------------------------ ICM NCS
 ESP32-S3 GND ------------------------------ ICM AD0
@@ -152,7 +158,7 @@ TPS61088 OUT-    -> ESP32 GND
 - 模块必须有板载输入和输出电容，并在空载时实测约 5.00V。
 - TP4057 输出不是 5V，必须经过 TPS61088 升压模块。
 - 开关不切换 3.3V。
-- USB 烧录或导出时断开电池输出。
+- TP4057 不具备负载共享；充电时必须关闭负载，USB 烧录或导出时必须断开电池输出，避免双 5V 倒灌。
 - 充电时关闭负载，第一版不要把封闭软袋直接放在无人看管的充电环境。
 
 如果 SS-12E07G4 的 DC 评级无法确认，才回退到低压高边 P-MOS 或 AO3415 离散方案；F5305S 5-36V 模块已排除。
@@ -169,7 +175,7 @@ TPS61088 OUT-    -> ESP32 GND
 | TPS61088 -> ESP32 | 固定 5V 输出 | 兼容 | 接 ESP32 5V 与 GND |
 | ESP32 -> ICM | 3.3V、GPIO8、GPIO9 | 兼容 | 不改变 NCS、AD0 和 I2C 基线 |
 | PH2.0 2P -> 电池 | 约 0.5 到 1A 稳态 | 兼容 | 峰值上电电流需实测 |
-| PH2.0 4P -> ICM | 4 根信号和电源线 | 兼容 | 线序固定 VCC/GND/SDA/SCL |
+| PH2.0 4P -> ICM | 4 根信号和电源线 | 兼容 | 线序固定 VCC/GND/SDI-SDA/SCLK-SCL |
 | TPS61088 -> 前臂软袋 | 40 × 22mm，焊盘版 | 兼容 | 优先焊盘版，端子版更厚 |
 
 需要下单前确认：
@@ -182,6 +188,7 @@ TPS61088 OUT-    -> ESP32 GND
 - [ ] 不要因为 TPS61088 标称 2A 就用 500mAh 电池长期跑满 2A；当前电池持续上限只有 500mA。
 - [ ] 模块 EN 不作为主电源开关，主开关仍使用 SS-12E07G4。
 - [ ] 输出先空载测 5.00V，再带 ESP32 启动测试，不得低于约 4.85V。
+- [ ] 采样率按 `210-240Hz` 或中位采样间隔 `4.0-4.8ms` 验收。
 
 ## 7. 应力释放
 
@@ -197,10 +204,10 @@ TPS61088 OUT-    -> ESP32 GND
 ### 断电检查
 
 - [ ] VCC 对 GND 不短路。
-- [ ] SDA 对 GND 不短路。
-- [ ] SCL 对 GND 不短路。
-- [ ] VCC 与 SDA 不导通。
-- [ ] VCC 与 SCL 不导通。
+- [ ] ICM SDI/SDA 对 GND 不短路。
+- [ ] ICM SCLK/SCL 对 GND 不短路。
+- [ ] VCC 与 ICM SDI/SDA 不导通。
+- [ ] VCC 与 ICM SCLK/SCL 不导通。
 - [ ] NCS 与 3V3 导通。
 - [ ] AD0 与 GND 导通。
 - [ ] PH2.0 4P 两端线序一致。
@@ -246,7 +253,7 @@ TPS61088 OUT-    -> ESP32 GND
 
 通过条件：
 
-- [ ] 采样率约 220-225Hz。
+- [ ] 采样率在 `210-240Hz`，或中位采样间隔在 `4.0-4.8ms`。
 - [ ] 最大采样间隔不超过 10ms。
 - [ ] 无复位。
 - [ ] 无全零。
@@ -299,7 +306,7 @@ TPS61088 OUT-    -> ESP32 GND
 - 3.7V 转 5V 升压模块尚未购买，当前无法完成电池供电验证。
 - TPS61088 必须选固定 5V SKU，不能用只有电位器且没有电压指示的版本。
 - 首版只需要 1 个 TPS61088；第二个只作为备用，不影响功能验收。
-- SS12D07VG4 不适合串联在升压输入电流路径，只允许用于 P-MOSFET 栅极控制。
+- SS12D07VG4 常见额定值约 0.5A；在数据手册确认达到 1A 前，不得用于升压输入主路径。当前只作为备用或低电流控制。
 - 使用合格成品 P-MOS 高边模块时，100k 和 1k 通常已经集成，不需要重复焊接。
 - 如果成品模块无法明确支持 3.0V 输入，则回到 AO3415 离散方案，并焊接 100k 和 1k。
 - 成品模块的 EN/CTRL 极性和参考电平必须在接线前用万用表确认。
@@ -307,7 +314,7 @@ TPS61088 OUT-    -> ESP32 GND
 - H2 实物尚未装配，所有机械和测试结果均为待验证。
 - `10cm × 8cm` 软袋对前臂偏大，真实投篮时可能晃动。
 - `10cm × 7cm × 2.3cm` 主控盒不适合佩戴，只能做收纳和台架。
-- 26AWG 线只有黑红两色，SDA 和 SCL 必须靠标签区分。
+- 26AWG 线只有黑红两色，ICM `SDI/SDA` 和 `SCLK/SCL` 必须靠标签区分。
 - TP4057 是充电板，需要确认 Type-C 口在前臂软袋中的可访问性。
 - 快速动作时，PH2.0 插头可能承受拉力，必须实际验证应力释放。
 - NCS 和 AD0 如果焊点断开，可能出现地址漂移或通信异常。

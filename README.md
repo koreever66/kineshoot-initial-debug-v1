@@ -29,8 +29,8 @@ hardware_revision    = H2
 ```text
 VCC  -> 3V3
 GND  -> GND
-SDA  -> GPIO8
-SCL  -> GPIO9
+ICM SDI/SDA  -> GPIO8
+ICM SCLK/SCL -> GPIO9
 NCS  -> 3V3
 AD0  -> GND
 I2C address = 0x68
