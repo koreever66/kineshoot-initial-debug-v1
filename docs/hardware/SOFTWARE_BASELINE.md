@@ -67,4 +67,40 @@ CSV fields:         timestamp_us, ax_mg, ay_mg, az_mg,
 metadata fields:    power_source, trigger_source, motion_speed
 ```
 
+## Current Software Test Power Boundary
+
+当前软件对话的测试供电仍然属于 H1：
+
+```text
+电脑 USB -> ESP32
+或
+充电宝 5V -> ESP32
+```
+
+因此当前软件测试不经过：
+
+```text
+电池
+TP4057
+3A 开关
+TPS61088
+P-MOS
+```
+
+软件接口只依赖：
+
+- ESP32 5V 输入保持稳定。
+- BOOT/GPIO0 和 RST 行为。
+- GPIO48 RGB 状态反馈。
+- USB CDC On Boot、采样、记录和导出协议。
+
+H2 后续采用的直接 3A 开关或 P-MOS 高边开关，都属于硬件电源实现，不改变软件接口。现阶段软件端使用电脑 USB 或充电宝测试时，不需要等待 H2 电源链完成。
+
+进入 H2 整机测试后必须遵守：
+
+- 电脑 USB 和电池输出不能同时连接。
+- TP4057 充电时关闭负载。
+- USB 烧录或导出时断开电池输出。
+- ESP32 5V 输入必须来自单一电源，避免双 5V 倒灌。
+
 Hardware owns only the physical implementation, power, connectors, mounting, and verification.
