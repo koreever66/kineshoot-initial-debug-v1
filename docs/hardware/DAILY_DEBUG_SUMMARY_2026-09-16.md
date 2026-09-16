@@ -6,7 +6,7 @@
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = eaf0e02f5c7a5d5046c68f914c662767ae544779
+software_commit      = 3162aa345627cc501781a91dbd21d02cdae4fe0a
 interface_revision   = I1
 hardware_revision    = H2
 hardware_branch      = codex/hardware-bringup
@@ -75,6 +75,8 @@ ESP32 开发板 5V 引脚需要稳定 5V
 - 确认电池保护板为 1C 持续、2C 峰值、1C 最大充电。
 - 完成 ESP32、ICM、TP4057、TPS61088 和穿戴尺寸的初步核算。
 - 将硬件资料、订单 BOM、尺寸和测试方案同步到硬件仓库。
+- 同步软件提交 `3162aa345627cc501781a91dbd21d02cdae4fe0a`。
+- 记录 GPIO48 RGB 状态灯、时间戳导出目录和新增元数据字段。
 
 ## 1.1 软件端同步修正清单
 

@@ -32,6 +32,23 @@ ICM-20948
 USB-C 数据口用于烧录和导出
 ```
 
+板载接口补充：
+
+```text
+BOOT       = GPIO0
+RST        = 硬件复位
+RGB LED    = WS2812B，GPIO48
+电源红灯   = 不可控，仅表示供电
+USB-C 接口 = CH340 串口口 + 原生 USB-OTG 口
+```
+
+测试规则：
+
+- 始终使用电脑识别为 `COM5` 的那个 USB-C 口进行烧录和串口调试。
+- 充电宝测试优先使用同一个 USB-C 口，只改变供电源，不改变端口。
+- 电源红灯亮只能说明板子有电，不能说明固件已经运行或正在记录。
+- 无绳状态使用 GPIO48 的 WS2812B 提供反馈。
+
 固定接线：
 
 ```text
@@ -106,24 +123,43 @@ temp_c
 
 ```text
 1. 连接充电宝
-2. 不碰 BOOT，等待约 5 秒
-3. 短按 BOOT 并立即松开
-4. 前 1-2 秒保持静止
-5. 执行测试动作
-6. 等待 10 秒记录结束
-7. 再等待约 2 秒完成 Flash 写入
-8. 断开充电宝
+2. 确认 BOOT 没有被按住
+3. 检查 RGB 是否蓝色常亮
+4. 如果蓝灯不亮，按一次 RST
+5. 必须确认 RGB 蓝色常亮，再进入主循环
+6. 等待约 2-5 秒
+7. 短按 BOOT 并立即松开
+8. RGB 变为红色
+9. 前 1-2 秒保持静止
+10. 执行测试动作
+11. 等待 10 秒记录结束
+12. 看到 RGB 绿色后恢复蓝色，表示写盘完成
+13. 断开充电宝
 ```
 
 ### 导出
 
 ```text
 1. 连接电脑 USB
-2. 如果进入下载模式，松开 BOOT 后按一次 RST
-3. 确认 IMU_FLASH_V4_READY
-4. 关闭串口监视器
-5. 运行 export_capture.bat
+2. 松开 BOOT 后按一次 RST
+3. 确认 RGB 蓝色常亮
+4. 打开串口监视器并确认 IMU_FLASH_V4_READY
+5. 关闭串口监视器
+6. 运行专用导出批次
 ```
+
+### 供电源切换规则
+
+从电脑切换到充电宝，或从充电宝切换回电脑后：
+
+```text
+先检查 RGB 蓝色状态
+蓝灯亮时可以直接继续
+蓝灯不亮时按一次 RST
+确认蓝色常亮后再开始 BOOT 记录或导出
+```
+
+不可控红色电源灯亮只能说明开发板有电，不能说明 F4 已经运行。
 
 导出后必须得到：
 
@@ -169,6 +205,100 @@ maximum interval        6.357 ms
 gaps >= 10 ms           0
 errors                  0
 resets                  0
+```
+
+### 六轮连续性基准
+
+```text
+directory               data/raw/20260916/
+rounds                  6
+rows per round          2269-2270
+sample rate             226.846-226.931 Hz
+maximum interval        5.844-6.350 ms
+gaps >= 10 ms           0
+sequence discontinuities 0
+errors                  0
+resets                  0
+```
+
+### 三组小幅动态基准
+
+```text
+directory               data/raw/20260916/
+rounds                  3
+rows per round          2269-2270
+sample rate             226.854-226.940 Hz
+maximum interval        5.843-6.360 ms
+gyro magnitude max      263.49-388.66 dps
+gaps >= 10 ms           0
+errors                  0
+resets                  0
+clipped samples         0
+```
+
+### 充电宝与 BOOT 供电验证
+
+```text
+directory               data/raw/20260916/
+files                   powerbank_boot_run01_round01-03.csv
+power_source            power_bank
+trigger_source          boot_button
+status                  power and write pass
+motion status           no motion in the intended 2-5 second window
+```
+
+### 充电宝 BOOT 投篮动作基准
+
+```text
+directory               data/raw/20260916/
+files                   powerbank_boot_motion_run02_round01-03.csv
+power_source            power_bank
+trigger_source          boot_button
+round 1 gyro max        175.98 dps
+round 2 gyro max        271.98 dps
+round 3 gyro max        466.36 dps
+round 3 accel max       3270.16 mg
+gaps >= 10 ms           0
+errors                  0
+resets                  0
+clipped samples         0
+```
+
+### 五组静止对照 Run 02
+
+```text
+directory               data/raw/20260916/
+files                   static_control_run02_round01-05.csv
+power_source            power_bank
+trigger_source          boot_button
+rows per round          2269-2270
+sample rate             226.845-226.939 Hz
+maximum interval        5.844-6.331 ms
+gyro after 1s mean      1.227-1.543 dps
+gaps >= 10 ms           0
+errors                  0
+resets                  0
+clipped samples         0
+```
+
+### 动作速度对照 Run 03
+
+```text
+directory               data/raw/20260916/
+files                   comparison_run03_static.csv
+                        comparison_run03_slow.csv
+                        comparison_run03_medium.csv
+                        comparison_run03_fast.csv
+power_source            power_bank
+trigger_source          boot_button
+slow gyro max           198.50 dps
+medium gyro max         425.75 dps
+fast gyro max           433.32 dps
+maximum interval        5.844-6.266 ms
+gaps >= 10 ms           0
+errors                  0
+resets                  0
+clipped samples         0
 ```
 
 ### 模拟投篮基准

@@ -8,7 +8,7 @@
 
 - 软件仓库：`https://github.com/koreever66/kineshoot-initial-debug-v2`
 - 软件分支：`codex/software-data`
-- 软件提交：`eaf0e02f5c7a5d5046c68f914c662767ae544779`
+- 软件提交：`3162aa345627cc501781a91dbd21d02cdae4fe0a`
 - 当前基线：`KB-2026-09-15-H1-F4-I1`
 
 本硬件仓库中的 `legacy/` 只保留旧 v1 固件、工具和数据，不用于当前采集。
@@ -19,7 +19,7 @@
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = eaf0e02f5c7a5d5046c68f914c662767ae544779
+software_commit      = 3162aa345627cc501781a91dbd21d02cdae4fe0a
 interface_revision   = I1
 hardware_revision    = H2
 ```
