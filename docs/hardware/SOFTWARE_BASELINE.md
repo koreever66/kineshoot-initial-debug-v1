@@ -52,8 +52,10 @@ WHO_AM_I:    0xEA
 firmware directory: firmware/imu_flash_logger_v4/
 record duration:    10 seconds
 buffering:          RAM during capture, batched LittleFS write after capture
-sample rate:        about 220-225 Hz
+sample rate:        nominal about 220-225 Hz
+observed F4:        226.85-226.94 Hz in frozen static and speed-test exports
 hardware acceptance 210-240 Hz or median interval 4.0-4.8 ms
+maximum interval:   <=10 ms
 accelerometer:      +/-16g
 gyroscope:          +/-2000dps
 trigger:            short press BOOT
@@ -84,7 +86,6 @@ metadata fields:    power_source, trigger_source, motion_speed
 TP4057
 3A 开关
 TPS61088
-P-MOS
 ```
 
 软件接口只依赖：
@@ -94,7 +95,7 @@ P-MOS
 - GPIO48 RGB 状态反馈。
 - USB CDC On Boot、采样、记录和导出协议。
 
-H2 后续采用的直接 3A 开关或 P-MOS 高边开关，都属于硬件电源实现，不改变软件接口。现阶段软件端使用电脑 USB 或充电宝测试时，不需要等待 H2 电源链完成。
+H2 首版采用的直接 3A 开关属于硬件电源实现，不改变软件接口。P-MOS 只保留为实测不合格时的硬件回退方案。现阶段软件端使用电脑 USB 或充电宝测试时，不需要等待 H2 电源链完成。
 
 进入 H2 整机测试后必须遵守：
 

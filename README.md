@@ -42,6 +42,7 @@ WHO_AM_I    = 0xEA
 
 - `docs/hardware/SOFTWARE_BASELINE.md`
 - `docs/hardware/H2_HANDOFF.md`
+- `docs/hardware/H2_ASSEMBLY_RUNBOOK.md`
 - `docs/hardware/H2_BOM.csv`
 - `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `docs/hardware/ORDER_RECEIPTS_2026-09-15.md`
@@ -54,6 +55,12 @@ WHO_AM_I    = 0xEA
 - ICM-20948 九轴传感器模块
 - 面包板和杜邦线
 - USB 数据线
+- 602535 500mAh 受保护锂电池 ×2
+- TP4057-500mA 充电板 ×2
+- TPS61088 固定 5V 升压模块 ×1
+- SS-12E07G4 3A 开关和 SS12D07VG4 备用开关
+- PH2.0 2P/4P 连接器、26AWG 红黑柔性线、热缩管
+- 传感器盒、前臂软袋、EVA 泡棉、腕带和前臂绑带
 - 电脑：Windows，Arduino IDE 2.3.10
 
 ## 目录
@@ -76,14 +83,14 @@ reference/software-baseline/ 软件固定提交的只读参考文件
 - 历史阶段出现过 `0x68`、`0x69`、`0x0C` 和 `100kHz`，这些不再作为当前实现目标。
 - 当前接口固定为 `0x68`、`50kHz`、`WHO_AM_I=0xEA`。
 - 当前软件基线为 F4，使用 10 秒 RAM 记录、LittleFS 批量写入和 BOOT 键触发。
-- H2 采购和装配方案已开始；部分物料已购买，TPS61088 固定 5V 模块和 P-MOSFET 高边开关仍需补齐。
-- H2 实物、照片、万用表和静止/动态测试尚未全部完成。
+- H2 物料已于 2026-09-18 到齐；首版主电源路径为 `电池 -> TP4057 -> SS-12E07G4 3A 开关 -> TPS61088 固定 5V -> ESP32 5V`，不使用 P-MOS。
+- H2 已进入实体装配和电气验证阶段；照片、万用表和静止/动态测试尚未完成。
 
 ## 下一步
 
-1. 购买 1 个 TPS61088 固定 5V 2A 模块；P-MOS 高边模块必须明确支持 3.0-4.2V，F5305S 5-36V 模块已排除。
-2. 按 `docs/hardware/H2_HANDOFF.md` 焊接 PH2.0 和柔性线束。
-3. 固定 NCS=3V3、AD0=GND，验证 `0x68` 和 `WHO_AM_I=0xEA`。
-4. 完成供电链、腕部固定和前臂固定。
+1. 按 `docs/hardware/H2_ASSEMBLY_RUNBOOK.md` 先做电池、TP4057 的断电通断检查和独立充电测试。
+2. 按 `docs/hardware/H2_HANDOFF.md` 焊接 PH2.0 和柔性线束；固定 NCS=3V3、AD0=GND。
+3. 先只用 USB 验证 `0x68` 和 `WHO_AM_I=0xEA`，再接入升压电源链。
+4. 完成腕部固定、前臂固定和应力释放。
 5. 完成 10 秒静止测试和小幅动态测试。
 6. 提交 H2 照片、测试结果和已知风险。
