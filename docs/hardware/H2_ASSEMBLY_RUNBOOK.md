@@ -163,6 +163,19 @@ AD0 -> GND
 
 先用电脑 USB 单独给 ESP32 供电，读取 `0x68` 和 `WHO_AM_I=0xEA`。此步通过前不要接电池供电链。
 
+2026-09-19 ICM 4P 静态初始化记录：
+
+```text
+IMU_FLASH_V4_BOOT
+FILESYSTEM_MOUNTING
+FILESYSTEM_MOUNT_OK
+FILESYSTEM,free=1433600,total=1441792
+IMU_INIT,status=All is well.
+IMU_CONFIG,acc=16g,gyro=2000dps,acc_dlpf=111.4Hz,gyr_dlpf=119.5Hz,odr_acc=225Hz,odr_gyr=220Hz,i2c=50000,addr=0x68
+```
+
+结论：ICM 4P 线束已通过初始化。`IMU_INIT,status=All is well.` 表示 SparkFun 库完成 `begin()` 和 `checkID()`，`WHO_AM_I` 已匹配 `0xEA`；I2C 使用 `0x68`、`50kHz`。此记录尚不等同于 10 秒静态采集通过。
+
 ## 5. 主电源链接线
 
 当前首版主路径：
