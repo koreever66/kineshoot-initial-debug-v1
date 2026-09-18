@@ -2,6 +2,12 @@
 
 Put H2 assembly and verification photos in this directory.
 
+Arrival and pre-check evidence captured on 2026-09-18:
+
+- `2026-09-18_tps61088_front.jpg`: actual TPS61088 front side with VIN/VOUT/GND, 5V/9V/12V/ADJ pads and PWM pad.
+- `2026-09-18_tps61088_back.jpg`: actual TPS61088 back side and dimensions marking.
+- `2026-09-18_tp4057_500ma.jpg`: actual TP4057-500mA board and four BAT through-holes.
+
 Required photos:
 
 1. ESP32 and ICM wiring overview.
@@ -16,3 +22,5 @@ Required photos:
 10. Multimeter continuity or voltage checks.
 
 Do not upload screenshots containing personal information, order pages, names, phone numbers, or addresses.
+
+These arrival photos are not verification evidence for soldering, charging, boost output, mechanical fit, or motion testing.
