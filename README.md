@@ -43,6 +43,7 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/SOFTWARE_BASELINE.md`
 - `docs/hardware/H2_HANDOFF.md`
 - `docs/hardware/H2_ASSEMBLY_RUNBOOK.md`
+- `docs/hardware/SOFTWARE_SYNC_2026-09-19.md`
 - `docs/hardware/H2_BOM.csv`
 - `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `docs/hardware/ORDER_RECEIPTS_2026-09-15.md`
