@@ -8,6 +8,7 @@
 hardware_revision = H2
 software_revision = F4
 interface_revision = I1
+software_commit = 276b312114518059409948a930539b79a12bb5ca
 ICM-20948 I2C = 0x68
 I2C clock = 50kHz
 WHO_AM_I = 0xEA
@@ -20,6 +21,7 @@ WHO_AM_I = 0xEA
 - I2C 固定地址诊断持续返回 `tx=0, rx=1, who=0xEA`。
 - 重新上传 F4 后，充电宝模式两次桌面静止采集恢复有效，均约 2270 行。
 - 恢复后的两次数据无采样缺口、无饱和，重力模长约 997 到 999mg。
+- 软件端 action-chain 会话已包含 6 次有效采集，并已加入 0 行空采集文件拒绝逻辑。
 
 ## 2. 当前开放问题
 
@@ -142,7 +144,7 @@ IMU_INIT 状态：
 
 软件端负责：
 
-- F4 固件零样本保护。
+- F4 固件零样本保护，当前已在软件提交 `9beb75a` 后实现。
 - CSV 和元数据校验。
 - 串口日志与采样算法分析。
 

@@ -2,7 +2,9 @@
 
 Software branch: `codex/software-data`
 
-Software commit: `1ec5968`
+Software commit at action-chain validation: `1ec5968`
+
+Latest software branch head at hardware sync: `276b312`
 
 ## Purpose
 

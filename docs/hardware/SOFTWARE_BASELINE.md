@@ -6,7 +6,7 @@ This file records the software baseline consumed by the hardware repository. The
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = 3162aa345627cc501781a91dbd21d02cdae4fe0a
+software_commit      = 276b312114518059409948a930539b79a12bb5ca
 interface_revision   = I1
 hardware_revision    = H2
 ```
@@ -67,6 +67,7 @@ export layout:      timestamped session directories
 CSV fields:         timestamp_us, ax_mg, ay_mg, az_mg,
                     gx_dps, gy_dps, gz_dps, temp_c
 metadata fields:    power_source, trigger_source, motion_speed
+zero-sample guard:  reject 0-row capture files since software commit 9beb75a
 ```
 
 ## Current Software Test Power Boundary
