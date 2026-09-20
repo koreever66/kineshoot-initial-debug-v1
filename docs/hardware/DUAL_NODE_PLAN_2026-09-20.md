@@ -18,6 +18,8 @@ Node 2: upper arm
 
 Do not connect the two nodes through a shared battery or shared 5V rail for the first revision.
 
+2026-09-20 decision: Node 2 will use the second protected battery B2. The two nodes will not share a battery, 5V rail, or ground in the first revision. No inter-node signal wire will be installed until the software conversation defines the synchronization method.
+
 ## 2. Additional Hardware Required
 
 Required:
