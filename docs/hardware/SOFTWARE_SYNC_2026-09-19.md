@@ -8,7 +8,8 @@
 hardware_revision = H2
 software_revision = F4
 interface_revision = I1
-software_commit = 276b312114518059409948a930539b79a12bb5ca
+software_commit = 3db2b5d
+software_remote = 276b312114518059409948a930539b79a12bb5ca
 ICM-20948 I2C = 0x68
 I2C clock = 50kHz
 WHO_AM_I = 0xEA

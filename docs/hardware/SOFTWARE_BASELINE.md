@@ -6,7 +6,8 @@ This file records the software baseline consumed by the hardware repository. The
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = 276b312114518059409948a930539b79a12bb5ca
+software_commit      = 3db2b5d
+software_remote      = 276b312114518059409948a930539b79a12bb5ca
 interface_revision   = I1
 hardware_revision    = H2
 ```

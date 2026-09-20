@@ -4,7 +4,9 @@ Software branch: `codex/software-data`
 
 Software commit at action-chain validation: `1ec5968`
 
-Latest software branch head at hardware sync: `276b312`
+Latest validated software commit: `3db2b5d`
+
+Last pushed software remote head at review time: `276b312`
 
 ## Purpose
 

@@ -4,7 +4,8 @@
 
 ```text
 software_baseline_id = KB-2026-09-15-H1-F4-I1
-software_commit      = 276b312114518059409948a930539b79a12bb5ca
+software_commit      = 3db2b5d
+software_remote      = 276b312114518059409948a930539b79a12bb5ca
 interface_revision   = I1
 hardware_revision    = H2
 H2 status            = assembling_and_verification
@@ -13,6 +14,8 @@ H2 status            = assembling_and_verification
 本文件是 2026-09-18 物料到齐后的执行顺序。软件接口以软件仓库的 I1 为准，硬件只负责装配、供电、机械固定和验证。
 
 2026-09-19 软件联调同步的硬件检查项见 `docs/hardware/SOFTWARE_SYNC_2026-09-19.md`。
+
+固定阶段执行清单见 `docs/hardware/FIXATION_RUNBOOK_2026-09-20.md`。
 
 ## 0. 首日开工检查
 
