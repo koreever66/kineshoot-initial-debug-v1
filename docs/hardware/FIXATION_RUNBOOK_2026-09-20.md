@@ -13,6 +13,28 @@ WHO_AM_I = 0xEA
 
 This stage changes only mechanical fixation, cable routing, and strain relief. Do not change firmware, tools, data format, connector pinout, `NCS`, or `AD0`.
 
+## 0. Dry-Fit Enclosure Decision
+
+On 2026-09-20, the dry-fit enclosure changed from the soft pouch to the already purchased transparent plastic storage box:
+
+```text
+approx. 10 x 7 x 2.3cm
+```
+
+The box is currently the mechanical dry-fit enclosure. It is not yet the final production enclosure.
+
+Rules for this box:
+
+- Keep all modules on one layer; do not stack ESP32, boost module, and battery into a three-layer sandwich.
+- Place ESP32 with the BOOT, RST, and RGB side facing the transparent lid.
+- Mark and drill a small BOOT access hole only after the final dry fit.
+- The transparent lid is the RGB visibility window; no second LED and no firmware change.
+- If the box presses the forearm or slides, add EVA to the skin side and use the 5cm strap plus a second anti-slip strap or Velcro base.
+- Keep the box away from the wrist crease and elbow crease.
+- Charge TP4057 with the box open or with a deliberate charging-access opening; do not charge in a closed, unattended box.
+- Use grommets, silicone tubes, or heat-shrink sleeves in every cable exit hole.
+- Keep the 4P connector latch serviceable; do not glue the connector into the box.
+
 ## 1. Pre-Fixation Gate
 
 - [ ] Battery switch OFF.
