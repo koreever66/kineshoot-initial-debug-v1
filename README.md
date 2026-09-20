@@ -48,6 +48,7 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/BATTERY_BOOST_VALIDATION_2026-09-19.md`
 - `docs/hardware/FIXATION_RUNBOOK_2026-09-20.md`
 - `docs/hardware/DUAL_NODE_PLAN_2026-09-20.md`
+- `docs/hardware/MEASUREMENT_SHEET_NODE2_2026-09-20.md`
 - `docs/hardware/H2_BOM.csv`
 - `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `docs/hardware/ORDER_RECEIPTS_2026-09-15.md`
