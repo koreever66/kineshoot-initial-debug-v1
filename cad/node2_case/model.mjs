@@ -135,7 +135,7 @@ export function enclosureReport() {
     fenceTopZ: c.fenceTopZ,
     internalNominal: [c.length - 2 * c.wallThickness, c.width - 2 * c.wallThickness, c.fenceTopZ],
     topStyle: 'open-fence-no-lid',
-    armCircumferenceMm: 340,
+    armCircumferenceMm: CONFIG.measuredInputs.arm.flexedCircumferenceMm,
     bottomCurve: { chordMm: c.width, sagittaMm: c.bottomSagitta, style: 'shallow-arm-cradle' },
   }
 }

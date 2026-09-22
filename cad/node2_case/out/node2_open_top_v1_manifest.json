@@ -1,17 +1,54 @@
 {
-  "generatedAt": "2026-09-22T11:51:32.045Z",
+  "generatedAt": "2026-09-22T12:48:01.787Z",
   "config": {
     "name": "KineShoot Node 2 upper-arm open case v1",
-    "revision": "N2-CASE-OPEN-V1",
+    "revision": "N2-CASE-OPEN-V1.1",
     "units": "mm",
+    "measuredInputs": {
+      "arm": {
+        "lateralWidthMm": 100,
+        "relaxedCircumferenceMm": 300,
+        "flexedCircumferenceMm": 317
+      },
+      "straps": {
+        "naturalLengthMm": [
+          500,
+          500
+        ],
+        "comfortableLengthMm": [
+          680,
+          700
+        ],
+        "hookLoopLengthMm": [
+          420,
+          400
+        ]
+      },
+      "esp32": {
+        "maximumEnvelopeMm": [
+          63.6,
+          27.94,
+          12
+        ],
+        "usbC": "single 32 x 7mm rectangular opening covering both ports"
+      },
+      "tps61088MaximumHeightMm": 11,
+      "batterySafeEnvelopeMm": [
+        43,
+        30,
+        15
+      ],
+      "icmMaximumBentHeightMm": 32,
+      "icmInstalledHeightNote": "Place ICM sideways and route the 4P cable flat; measure installed height again before final print."
+    },
     "case": {
       "length": 125,
       "width": 75,
-      "height": 26,
+      "height": 32,
       "wallThickness": 2.5,
       "baseSlabThickness": 2.5,
       "bottomSagitta": 6,
-      "fenceTopZ": 17.5,
+      "fenceTopZ": 23.5,
       "curveHalfWidth": 37.5
     },
     "ears": {
@@ -23,28 +60,28 @@
       "earDepth": 8,
       "railThickness": 2.5,
       "railHeight": 2.5,
-      "postHeight": 7,
-      "zCenter": 7.5
+      "postHeight": 10,
+      "zCenter": 9.5
     },
     "ports": {
       "espCom": {
         "label": "ESP32 COM USB-C",
         "wall": "proximalEnd",
         "x": 62.5,
-        "y": 18,
-        "z": 8,
+        "y": 0,
+        "z": 9,
         "size": [
           2.5,
-          11,
-          5
+          32,
+          7
         ]
       },
       "tp4057Charge": {
         "label": "TP4057 Type-C",
         "wall": "positiveSide",
-        "x": -4,
+        "x": -2.5,
         "y": 37.5,
-        "z": 8,
+        "z": 6,
         "size": [
           11,
           2.5,
@@ -63,7 +100,7 @@
         "size": [
           26.5,
           15.3,
-          5
+          12
         ],
         "color": "#7c3aed",
         "note": "distal / elbow end, isolated pocket"
@@ -76,9 +113,9 @@
           -20
         ],
         "size": [
-          64,
-          28,
-          11
+          63.6,
+          27.94,
+          12
         ],
         "color": "#1f2937",
         "note": "proximal / shoulder end"
@@ -87,13 +124,13 @@
         "id": "battery",
         "label": "Battery B2",
         "center": [
-          43,
-          20
+          36.5,
+          17
         ],
         "size": [
+          43,
           30,
-          20,
-          6
+          15
         ],
         "color": "#16a34a",
         "note": "proximal / shoulder end"
@@ -108,7 +145,7 @@
         "size": [
           40,
           22,
-          9
+          11
         ],
         "color": "#d97706",
         "note": "middle power zone"
@@ -117,8 +154,8 @@
         "id": "tp4057",
         "label": "TP4057",
         "center": [
-          -4,
-          22
+          -2.5,
+          26
         ],
         "size": [
           11,
@@ -132,13 +169,13 @@
         "id": "switch",
         "label": "SS-12E07G4",
         "center": [
-          12,
-          20
+          2,
+          11.5
         ],
         "size": [
           20,
           13,
-          9
+          11
         ],
         "color": "#2563eb",
         "note": "middle power zone"
@@ -177,22 +214,22 @@
   },
   "enclosure": {
     "model": "KineShoot Node 2 upper-arm open case v1",
-    "revision": "N2-CASE-OPEN-V1",
+    "revision": "N2-CASE-OPEN-V1.1",
     "units": "mm",
     "outerNominal": [
       125,
       75,
-      26
+      32
     ],
     "outerDeepestZ": -8.5,
-    "fenceTopZ": 17.5,
+    "fenceTopZ": 23.5,
     "internalNominal": [
       120,
       70,
-      17.5
+      23.5
     ],
     "topStyle": "open-fence-no-lid",
-    "armCircumferenceMm": 340,
+    "armCircumferenceMm": 317,
     "bottomCurve": {
       "chordMm": 75,
       "sagittaMm": 6,
@@ -208,7 +245,7 @@
     [
       62.5,
       44.875,
-      17.5
+      23.5
     ]
   ],
   "validation": {
