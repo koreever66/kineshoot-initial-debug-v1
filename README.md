@@ -50,6 +50,9 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/FIELD_CAPTURE_VALIDATION_2026-09-21.md`
 - `docs/hardware/DUAL_NODE_PLAN_2026-09-20.md`
 - `docs/hardware/MEASUREMENT_SHEET_NODE2_2026-09-20.md`
+- `docs/hardware/design/node2_preassembly_v1.png`
+- `cad/node2_case/README.md`
+- `docs/hardware/design/node2_open_top_v1/`
 - `docs/hardware/H2_BOM.csv`
 - `docs/hardware/WEARABLE_DIMENSIONS.md`
 - `docs/hardware/ORDER_RECEIPTS_2026-09-15.md`

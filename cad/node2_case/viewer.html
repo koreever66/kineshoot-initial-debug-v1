@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KineShoot Node 2 Open Case v1</title>
+  <style>
+    :root { color-scheme: dark; font-family: "Microsoft YaHei", system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0f172a; color: #e2e8f0; }
+    #app { position: fixed; inset: 0; }
+    #panel { position: fixed; top: 18px; left: 18px; width: 330px; padding: 16px 18px; border-radius: 14px; background: rgba(15,23,42,.88); border: 1px solid rgba(148,163,184,.35); backdrop-filter: blur(12px); }
+    h1 { margin: 0 0 8px; font-size: 19px; line-height: 1.25; }
+    h2 { margin: 15px 0 7px; font-size: 14px; color: #cbd5e1; }
+    p { margin: 5px 0; color: #94a3b8; font-size: 12px; line-height: 1.45; }
+    .stats { margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; color: #bfdbfe; }
+    .legend { display: grid; gap: 6px; margin-top: 7px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; }
+    .swatch { width: 12px; height: 12px; border-radius: 3px; }
+    .buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    button { border: 1px solid #475569; background: #1e293b; color: #e2e8f0; padding: 7px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px; }
+    button:hover { background: #334155; }
+    #hint { position: fixed; right: 18px; bottom: 16px; color: #94a3b8; font-size: 12px; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./node_modules/three/build/three.module.js",
+      "three/addons/": "./node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <section id="panel">
+    <h1>Node 2 Upper-Arm Open Case v1</h1>
+    <div class="stats" id="stats">loading model...</div>
+    <p>Open-top perimeter fence, shallow arm cradle, two 50mm strap-ear stations.</p>
+    <h2>Module legend</h2>
+    <div class="legend" id="legend"></div>
+    <div class="buttons">
+      <button data-view="iso">Isometric</button>
+      <button data-view="top">Top</button>
+      <button data-view="side">Side</button>
+      <button id="toggleModules">Toggle modules</button>
+      <button id="toggleShell">Shell opacity</button>
+    </div>
+  </section>
+  <div id="hint">Drag to rotate. Scroll to zoom. Right-drag to pan.</div>
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>

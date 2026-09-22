@@ -1,0 +1,223 @@
+{
+  "generatedAt": "2026-09-22T11:51:32.045Z",
+  "config": {
+    "name": "KineShoot Node 2 upper-arm open case v1",
+    "revision": "N2-CASE-OPEN-V1",
+    "units": "mm",
+    "case": {
+      "length": 125,
+      "width": 75,
+      "height": 26,
+      "wallThickness": 2.5,
+      "baseSlabThickness": 2.5,
+      "bottomSagitta": 6,
+      "fenceTopZ": 17.5,
+      "curveHalfWidth": 37.5
+    },
+    "ears": {
+      "xPositions": [
+        -36.5,
+        36.5
+      ],
+      "slotLength": 52,
+      "earDepth": 8,
+      "railThickness": 2.5,
+      "railHeight": 2.5,
+      "postHeight": 7,
+      "zCenter": 7.5
+    },
+    "ports": {
+      "espCom": {
+        "label": "ESP32 COM USB-C",
+        "wall": "proximalEnd",
+        "x": 62.5,
+        "y": 18,
+        "z": 8,
+        "size": [
+          2.5,
+          11,
+          5
+        ]
+      },
+      "tp4057Charge": {
+        "label": "TP4057 Type-C",
+        "wall": "positiveSide",
+        "x": -4,
+        "y": 37.5,
+        "z": 8,
+        "size": [
+          11,
+          2.5,
+          6
+        ]
+      }
+    },
+    "modules": [
+      {
+        "id": "icm20948",
+        "label": "ICM-20948",
+        "center": [
+          -43,
+          -23
+        ],
+        "size": [
+          26.5,
+          15.3,
+          5
+        ],
+        "color": "#7c3aed",
+        "note": "distal / elbow end, isolated pocket"
+      },
+      {
+        "id": "esp32",
+        "label": "ESP32-S3 N16R8",
+        "center": [
+          28,
+          -20
+        ],
+        "size": [
+          64,
+          28,
+          11
+        ],
+        "color": "#1f2937",
+        "note": "proximal / shoulder end"
+      },
+      {
+        "id": "battery",
+        "label": "Battery B2",
+        "center": [
+          43,
+          20
+        ],
+        "size": [
+          30,
+          20,
+          6
+        ],
+        "color": "#16a34a",
+        "note": "proximal / shoulder end"
+      },
+      {
+        "id": "tps61088",
+        "label": "TPS61088",
+        "center": [
+          -30,
+          20
+        ],
+        "size": [
+          40,
+          22,
+          9
+        ],
+        "color": "#d97706",
+        "note": "middle power zone"
+      },
+      {
+        "id": "tp4057",
+        "label": "TP4057",
+        "center": [
+          -4,
+          22
+        ],
+        "size": [
+          11,
+          10,
+          5
+        ],
+        "color": "#dc2626",
+        "note": "middle power zone"
+      },
+      {
+        "id": "switch",
+        "label": "SS-12E07G4",
+        "center": [
+          12,
+          20
+        ],
+        "size": [
+          20,
+          13,
+          9
+        ],
+        "color": "#2563eb",
+        "note": "middle power zone"
+      }
+    ],
+    "wireChannels": [
+      {
+        "id": "main-channel",
+        "label": "4P + 2P service channel",
+        "center": [
+          -20,
+          0
+        ],
+        "size": [
+          8,
+          18
+        ],
+        "z": 4,
+        "color": "#60a5fa"
+      },
+      {
+        "id": "distal-loop",
+        "label": "ICM 4P service loop",
+        "center": [
+          -43,
+          -7
+        ],
+        "size": [
+          30,
+          10
+        ],
+        "z": 4,
+        "color": "#a78bfa"
+      }
+    ]
+  },
+  "enclosure": {
+    "model": "KineShoot Node 2 upper-arm open case v1",
+    "revision": "N2-CASE-OPEN-V1",
+    "units": "mm",
+    "outerNominal": [
+      125,
+      75,
+      26
+    ],
+    "outerDeepestZ": -8.5,
+    "fenceTopZ": 17.5,
+    "internalNominal": [
+      120,
+      70,
+      17.5
+    ],
+    "topStyle": "open-fence-no-lid",
+    "armCircumferenceMm": 340,
+    "bottomCurve": {
+      "chordMm": 75,
+      "sagittaMm": 6,
+      "style": "shallow-arm-cradle"
+    }
+  },
+  "shellBoundingBox": [
+    [
+      -62.5,
+      -44.875,
+      -8.500000000000002
+    ],
+    [
+      62.5,
+      44.875,
+      17.5
+    ]
+  ],
+  "validation": {
+    "passed": true,
+    "errors": [],
+    "modulesChecked": 6
+  },
+  "files": {
+    "stl": "node2_open_top_v1.stl",
+    "threeMf": "node2_open_top_v1.3mf"
+  }
+}
