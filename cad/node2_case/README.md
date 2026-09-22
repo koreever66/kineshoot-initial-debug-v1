@@ -3,7 +3,7 @@
 Parametric JSCAD model for the second-node upper-arm enclosure.
 
 ```text
-revision: N2-CASE-OPEN-V1
+revision: N2-CASE-OPEN-V1.2
 body outer size: 125 x 75 x 32 mm
 internal nominal: 120 x 70 x 23.5 mm
 top: open perimeter fence, no lid
@@ -39,6 +39,10 @@ strap natural / comfortable length: 500 mm / 680-700 mm
 ```
 
 The ICM maximum bent height measured by the user is 32 mm. The current model assumes the ICM is laid sideways and its 4P cable is routed flat. Verify the installed height after that routing before the final print; if it exceeds 23.5 mm above the deck, raise the fence parameter.
+
+Revision V1.2 shortens the ICM partition to the distal/front pocket so it no
+longer crosses the TPS61088 footprint. The build also checks every module
+against the partition, not only against the outer walls.
 
 ## Generated Files
 

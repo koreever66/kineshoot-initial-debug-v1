@@ -45,11 +45,31 @@ function createFence() {
     cuboid({ size: [t, width, h + overlap], center: [length / 2 - t / 2, 0, h / 2 - overlap / 2] }),
     cuboid({ size: [t, width, h + overlap], center: [-length / 2 + t / 2, 0, h / 2 - overlap / 2] }),
   ]
-  const icmPartition = cuboid({
-    size: [t * 0.8, width - t * 2, h + overlap],
-    center: [-length / 2 + 32, 0, h / 2 - overlap / 2],
+  return union(sideWalls, endWalls, createIcmPartition())
+}
+
+function createIcmPartition() {
+  const { fenceTopZ: h, icmPartition: p } = CONFIG.case
+  const overlap = 1
+  return cuboid({
+    size: [p.thickness, p.maxY - p.minY, h + overlap],
+    center: [p.x, (p.minY + p.maxY) / 2, h / 2 - overlap / 2],
   })
-  return union(sideWalls, endWalls, icmPartition)
+}
+
+export function internalObstacles() {
+  const { icmPartition: p } = CONFIG.case
+  return [
+    {
+      id: 'icm-partition',
+      bounds: {
+        minX: p.x - p.thickness / 2,
+        maxX: p.x + p.thickness / 2,
+        minY: p.minY,
+        maxY: p.maxY,
+      },
+    },
+  ]
 }
 
 function createEarHook(x, side) {

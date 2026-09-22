@@ -23,6 +23,7 @@ internal nominal: 120 x 70 x 23.5 mm
 top: open
 strap stations: two, direct 50 mm strap hooks
 arm circumference: 300 mm relaxed / 317 mm flexed
+ICM partition: distal/front pocket only; checked against module footprints
 ```
 
 This is a prototype mechanical enclosure. It does not modify the ICM, ESP32, power path, firmware, or software protocol.

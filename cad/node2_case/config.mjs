@@ -1,6 +1,6 @@
 export const CONFIG = {
   name: 'KineShoot Node 2 upper-arm open case v1',
-  revision: 'N2-CASE-OPEN-V1.1',
+  revision: 'N2-CASE-OPEN-V1.2',
   units: 'mm',
   measuredInputs: {
     arm: {
@@ -31,6 +31,12 @@ export const CONFIG = {
     bottomSagitta: 6,
     fenceTopZ: 23.5,
     curveHalfWidth: 37.5,
+    icmPartition: {
+      x: -30.5,
+      thickness: 2,
+      minY: -35,
+      maxY: -10,
+    },
   },
   ears: {
     xPositions: [-36.5, 36.5],
@@ -63,7 +69,7 @@ export const CONFIG = {
     {
       id: 'icm20948',
       label: 'ICM-20948',
-      center: [-43, -23],
+      center: [-45.75, -23],
       size: [26.5, 15.3, 12],
       color: '#7c3aed',
       note: 'distal / elbow end, isolated pocket',
@@ -121,8 +127,8 @@ export const CONFIG = {
     {
       id: 'distal-loop',
       label: 'ICM 4P service loop',
-      center: [-43, -7],
-      size: [30, 10],
+      center: [-45.75, -3],
+      size: [30, 8],
       z: 4,
       color: '#a78bfa',
     },

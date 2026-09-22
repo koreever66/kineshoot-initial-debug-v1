@@ -5,7 +5,7 @@ import jscad from '@jscad/modeling'
 import stlSerializer from '@jscad/stl-serializer'
 import threeMfSerializer from '@jscad/3mf-serializer'
 import { CONFIG } from './config.mjs'
-import { buildShell, enclosureReport } from './model.mjs'
+import { buildShell, enclosureReport, internalObstacles } from './model.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const outDir = join(__dirname, 'out')
@@ -31,6 +31,7 @@ function validateLayout() {
   const innerLength = CONFIG.case.length - CONFIG.case.wallThickness * 2
   const innerWidth = CONFIG.case.width - CONFIG.case.wallThickness * 2
   const modules = CONFIG.modules.map((module) => ({ module, bounds: rectangleBounds(module) }))
+  const obstacles = internalObstacles()
 
   for (const { module, bounds } of modules) {
     if (bounds.minX < -innerLength / 2 || bounds.maxX > innerLength / 2) {
@@ -52,7 +53,20 @@ function validateLayout() {
     }
   }
 
-  return { passed: errors.length === 0, errors, modulesChecked: modules.length }
+  for (const { module, bounds } of modules) {
+    for (const obstacle of obstacles) {
+      if (overlaps(bounds, obstacle.bounds)) {
+        errors.push(`${module.id} overlaps ${obstacle.id}`)
+      }
+    }
+  }
+
+  return {
+    passed: errors.length === 0,
+    errors,
+    modulesChecked: modules.length,
+    obstaclesChecked: obstacles.length,
+  }
 }
 
 function asBuffer(value) {
@@ -104,4 +118,7 @@ if (!validation.passed) {
 console.log(`Generated ${join(outDir, 'node2_open_top_v1.stl')}`)
 console.log(`Generated ${join(outDir, 'node2_open_top_v1.3mf')}`)
 console.log(`Bounding box: ${JSON.stringify(bounds)}`)
-console.log(`Layout validation: ${validation.passed ? 'PASS' : 'FAIL'} (${validation.modulesChecked} modules)`)
+console.log(
+  `Layout validation: ${validation.passed ? 'PASS' : 'FAIL'} ` +
+    `(${validation.modulesChecked} modules, ${validation.obstaclesChecked} obstacles)`,
+)
