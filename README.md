@@ -8,7 +8,7 @@
 
 - 软件仓库：`https://github.com/koreever66/kineshoot-initial-debug-v2`
 - 软件分支：`codex/software-data`
-- 软件提交：`3db2b5d`（本地已验证，远端推送待网络恢复）
+- 软件提交：`ab44f2a`（15 秒采集与穿戴校准版本，远端推送待网络恢复）
 - 当前基线：`KB-2026-09-15-H1-F4-I1`
 
 本硬件仓库中的 `legacy/` 只保留旧 v1 固件、工具和数据，不用于当前采集。
@@ -19,8 +19,7 @@
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = 3db2b5d
-software_remote      = 276b312114518059409948a930539b79a12bb5ca
+software_commit      = ab44f2a
 interface_revision   = I1
 hardware_revision    = H2
 ```
@@ -47,6 +46,8 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/SOFTWARE_SYNC_2026-09-19.md`
 - `docs/hardware/BATTERY_BOOST_VALIDATION_2026-09-19.md`
 - `docs/hardware/FIXATION_RUNBOOK_2026-09-20.md`
+- `docs/hardware/WEARABLE_DIRECTION_CALIBRATION_2026-09-21.md`
+- `docs/hardware/FIELD_CAPTURE_VALIDATION_2026-09-21.md`
 - `docs/hardware/DUAL_NODE_PLAN_2026-09-20.md`
 - `docs/hardware/MEASUREMENT_SHEET_NODE2_2026-09-20.md`
 - `docs/hardware/H2_BOM.csv`

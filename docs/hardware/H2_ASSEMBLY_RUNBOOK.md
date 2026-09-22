@@ -4,8 +4,7 @@
 
 ```text
 software_baseline_id = KB-2026-09-15-H1-F4-I1
-software_commit      = 3db2b5d
-software_remote      = 276b312114518059409948a930539b79a12bb5ca
+software_commit      = ab44f2a
 interface_revision   = I1
 hardware_revision    = H2
 H2 status            = assembling_and_verification

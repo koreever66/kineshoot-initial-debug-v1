@@ -6,8 +6,7 @@ This file records the software baseline consumed by the hardware repository. The
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = 3db2b5d
-software_remote      = 276b312114518059409948a930539b79a12bb5ca
+software_commit      = ab44f2a
 interface_revision   = I1
 hardware_revision    = H2
 ```
@@ -51,10 +50,10 @@ WHO_AM_I:    0xEA
 
 ```text
 firmware directory: firmware/imu_flash_logger_v4/
-record duration:    10 seconds
+record duration:    15 seconds
 buffering:          RAM during capture, batched LittleFS write after capture
 sample rate:        nominal about 220-225 Hz
-observed F4:        226.85-226.94 Hz in frozen static and speed-test exports
+observed F4:        approximately 226.9 Hz in current exports
 hardware acceptance 210-240 Hz or median interval 4.0-4.8 ms
 maximum interval:   <=10 ms
 accelerometer:      +/-16g
@@ -69,6 +68,7 @@ CSV fields:         timestamp_us, ax_mg, ay_mg, az_mg,
                     gx_dps, gy_dps, gz_dps, temp_c
 metadata fields:    power_source, trigger_source, motion_speed
 zero-sample guard:  reject 0-row capture files since software commit 9beb75a
+field captures:     approximately 3403-3404 rows in the 2026-09-21 session
 ```
 
 ## Current Software Test Power Boundary

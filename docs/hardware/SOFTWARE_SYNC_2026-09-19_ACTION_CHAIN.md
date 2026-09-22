@@ -4,7 +4,7 @@ Software branch: `codex/software-data`
 
 Software commit at action-chain validation: `1ec5968`
 
-Latest validated software commit: `3db2b5d`
+Latest validated software commit: `ab44f2a`
 
 Last pushed software remote head at review time: `276b312`
 
