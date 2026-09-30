@@ -70,6 +70,10 @@ session_20261001_034814/capture_001.csv
 
 The corresponding 15.61-second 1080p60 video shows the green write-complete LED at approximately `12.526 s`. Telemetry reports `11.535 s` from capture start to write completion, giving an estimated IMU start at approximately `0.991 s` in the video, consistent with the configured 1-second blue pre-roll.
 
+## Metadata Provenance Correction
+
+The software side corrected exported metadata after this hardware review. Software commit `6f6e7fc` now records the replacement-board baseline as `H2`, adds a dedicated BLE/App export wrapper using `trigger_source = ble_command`, and preserves `boot_button` only for physical BOOT-triggered exports. The known `032715/capture_011-013` and `034814/capture_001` metadata were corrected without changing any CSV IMU values.
+
 ## Hardware Notes and Next Checks
 
 - Green indicates that the CSV and telemetry write completed; it is not the physical end of the player's motion.
@@ -79,4 +83,3 @@ The corresponding 15.61-second 1080p60 video shows the green write-complete LED 
 - Secure the replacement board and strain-relieve the I2C/power wiring inside the enclosure.
 - Run a battery-powered BLE capture series and compare sample continuity, reset count, and RGB behavior to the USB-powered baseline.
 - Record the next enclosure revision or fastening change if the replacement board dimensions alter the current wrist-node fit.
-
