@@ -8,7 +8,7 @@
 
 - 软件仓库：`https://github.com/koreever66/kineshoot-initial-debug-v2`
 - 软件分支：`codex/software-data`
-- 软件提交：`ab44f2a`（15 秒采集与穿戴校准版本，远端推送待网络恢复）
+- 软件提交：`ef92a97`（BLE 控制、iOS App、1080p60 与灯光预卷版本）
 - 当前基线：`KB-2026-09-15-H1-F4-I1`
 
 本硬件仓库中的 `legacy/` 只保留旧 v1 固件、工具和数据，不用于当前采集。
@@ -19,7 +19,7 @@
 software_baseline_id = KB-2026-09-15-H1-F4-I1
 software_repository  = koreever66/kineshoot-initial-debug-v2
 software_branch      = codex/software-data
-software_commit      = ab44f2a
+software_commit      = ef92a97
 interface_revision   = I1
 hardware_revision    = H2
 ```
@@ -48,6 +48,7 @@ WHO_AM_I    = 0xEA
 - `docs/hardware/FIXATION_RUNBOOK_2026-09-20.md`
 - `docs/hardware/WEARABLE_DIRECTION_CALIBRATION_2026-09-21.md`
 - `docs/hardware/FIELD_CAPTURE_VALIDATION_2026-09-21.md`
+- `docs/hardware/ESP32_REPLACEMENT_BLE_APP_2026-10-01.md`
 - `docs/hardware/DUAL_NODE_PLAN_2026-09-20.md`
 - `docs/hardware/MEASUREMENT_SHEET_NODE2_2026-09-20.md`
 - `docs/hardware/design/node2_preassembly_v1.png`
@@ -90,9 +91,12 @@ reference/software-baseline/ 软件固定提交的只读参考文件
 ## 当前状态
 
 - 面包板阶段已经完成 ESP32-S3 与 ICM-20948 通信验证。
+- 腕部原 ESP32-S3 在采集第 6 组时出现过热和 BOOT 区域损坏，现已替换为原 Node 2 备用的 ESP32-S3 DevKitC-1 N16R8；接线保持不变。
 - 历史阶段出现过 `0x68`、`0x69`、`0x0C` 和 `100kHz`，这些不再作为当前实现目标。
 - 当前接口固定为 `0x68`、`50kHz`、`WHO_AM_I=0xEA`。
-- 当前软件基线为 F4，使用 10 秒 RAM 记录、LittleFS 批量写入和 BOOT 键触发。
+- 当前软件基线为 F4，使用 10 秒 RAM 记录、LittleFS 批量写入、BOOT 备用触发和 BLE 控制触发。
+- 已加入 iPhone 配套 App：`KineShootRemote 1.5.1 (8)`，支持 1080p60、前置/后置切换、缩放、1 秒蓝灯预卷和 14 秒录像。
+- 绿灯表示 CSV 与 telemetry 写入完成，不等于球员动作结束；已验证绿灯和 telemetry 可用于对齐视频与 IMU。
 - H2 物料已于 2026-09-18 到齐；首版主电源路径为 `电池 -> TP4057 -> SS-12E07G4 3A 开关 -> TPS61088 固定 5V -> ESP32 5V`，不使用 P-MOS。
 - H2 已进入实体装配和电气验证阶段；照片、万用表和静止/动态测试尚未完成。
 
@@ -103,4 +107,5 @@ reference/software-baseline/ 软件固定提交的只读参考文件
 3. 先只用 USB 验证 `0x68` 和 `WHO_AM_I=0xEA`，再接入升压电源链。
 4. 完成腕部固定、前臂固定和应力释放。
 5. 完成 10 秒静止测试和小幅动态测试。
-6. 提交 H2 照片、测试结果和已知风险。
+6. 对替换后的 ESP32 做电池供电 BLE 连续采集，检查温升、复位、丢样和结构固定。
+7. 提交 H2 照片、测试结果和已知风险。
