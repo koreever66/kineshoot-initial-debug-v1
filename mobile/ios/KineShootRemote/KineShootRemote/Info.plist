@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>KineShoot</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.6.1</string>
+    <key>CFBundleVersion</key>
+    <string>10</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>用于连接 KineShoot 采集设备并启动 IMU 采集。</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>用于连接 KineShoot 采集设备并启动 IMU 采集。</string>
+    <key>NSCameraUsageDescription</key>
+    <string>用于同步录制投篮视频。</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>用于在同步录制投篮视频时采集声音。</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>用于在保存投篮视频时访问照片。</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>用于把采集视频保存到照片。</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,79 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "mobile/ios/KineShootRemote/**"
+      - ".github/workflows/ios-unsigned.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-ipa:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: mobile/ios/KineShootRemote
+        run: xcodegen generate
+
+      - name: Build unsigned app
+        working-directory: mobile/ios/KineShootRemote
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project KineShootRemote.xcodeproj \
+            -scheme KineShootRemote \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log
+
+      - name: Publish build log on failure
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-build-log
+          name: KineShoot iOS build log
+          prerelease: true
+          make_latest: false
+          files: mobile/ios/KineShootRemote/build.log
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package unsigned IPA
+        working-directory: mobile/ios/KineShootRemote
+        run: |
+          rm -rf Payload KineShootRemote-unsigned.ipa
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/KineShootRemote.app Payload/
+          zip -qry KineShootRemote-unsigned.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KineShootRemote-unsigned-ipa
+          path: mobile/ios/KineShootRemote/KineShootRemote-unsigned.ipa
+          if-no-files-found: error
+
+      - name: Publish IPA download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-latest
+          name: KineShoot iOS latest
+          prerelease: true
+          make_latest: false
+          files: mobile/ios/KineShootRemote/KineShootRemote-unsigned.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

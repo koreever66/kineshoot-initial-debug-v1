@@ -1,0 +1,406 @@
+import AVFoundation
+import Foundation
+import Photos
+import UIKit
+
+struct RecordedVideo: Identifiable, Equatable {
+    let id: UUID
+    let fileURL: URL
+    let startedAt: Date
+    let finishedAt: Date
+}
+
+final class VideoRecorder: NSObject, ObservableObject {
+    @Published private(set) var isRecording = false
+    @Published private(set) var statusText = "相机待机"
+    @Published private(set) var cameraPosition: AVCaptureDevice.Position = .back
+    @Published private(set) var zoomFactor: CGFloat = 1
+    @Published private(set) var maxZoomFactor: CGFloat = 1
+    @Published private(set) var captureFormatText = "1080p"
+    @Published private(set) var finishedRecording: RecordedVideo?
+    @Published private(set) var lastPhotoIdentifier: String?
+    @Published var errorMessage: String?
+
+    let session = AVCaptureSession()
+    private let movieOutput = AVCaptureMovieFileOutput()
+    private var sessionConfigured = false
+    private var activeURL: URL?
+    private var videoInput: AVCaptureDeviceInput?
+    private var currentCamera: AVCaptureDevice?
+    private var recordingStartedAt: Date?
+
+    @MainActor
+    func prepare() async throws {
+        try await ensureCameraPermission()
+
+        if !sessionConfigured {
+            try configureSession()
+        }
+
+        if !session.isRunning {
+            session.startRunning()
+        }
+    }
+
+    @MainActor
+    func startRecording() async throws {
+        try await prepare()
+
+        let outputURL = try makeOutputURL()
+        activeURL = outputURL
+        recordingStartedAt = Date()
+        isRecording = true
+        statusText = "录像中"
+        UIApplication.shared.isIdleTimerDisabled = true
+        movieOutput.startRecording(to: outputURL, recordingDelegate: self)
+    }
+
+    @MainActor
+    func stopRecording() {
+        guard movieOutput.isRecording else {
+            return
+        }
+        movieOutput.stopRecording()
+    }
+
+    @MainActor
+    func switchCamera(to position: AVCaptureDevice.Position) async throws {
+        guard !isRecording else {
+            throw RecorderError.cannotSwitchWhileRecording
+        }
+        guard position != cameraPosition || videoInput == nil else {
+            return
+        }
+
+        let camera = try cameraDevice(for: position)
+        let newInput = try AVCaptureDeviceInput(device: camera)
+        let previousInput = videoInput
+
+        session.beginConfiguration()
+        configureCameraFormat(for: camera)
+        if let previousInput {
+            session.removeInput(previousInput)
+        }
+
+        guard session.canAddInput(newInput) else {
+            if let previousInput, session.canAddInput(previousInput) {
+                session.addInput(previousInput)
+            }
+            session.commitConfiguration()
+            throw RecorderError.cameraInputUnavailable
+        }
+
+        session.addInput(newInput)
+        videoInput = newInput
+        currentCamera = camera
+        cameraPosition = position
+        zoomFactor = 1
+        updateVideoConnection()
+        session.commitConfiguration()
+        updateZoomRange(for: camera)
+        applyZoom(1, to: camera)
+        resetFocus(for: camera)
+    }
+
+    @MainActor
+    func setZoom(_ requestedZoom: CGFloat) {
+        guard let currentCamera else {
+            return
+        }
+        let clampedZoom = min(max(requestedZoom, 1), maxZoomFactor)
+        applyZoom(clampedZoom, to: currentCamera)
+    }
+
+    @MainActor
+    func adjustZoom(by delta: CGFloat) {
+        guard let currentCamera else {
+            return
+        }
+        let stepped = ((zoomFactor + delta) * 10).rounded() / 10
+        let clampedZoom = min(max(stepped, 1), maxZoomFactor)
+        applyZoom(clampedZoom, to: currentCamera)
+    }
+
+    @MainActor
+    func focus(at devicePoint: CGPoint) {
+        guard let currentCamera else {
+            return
+        }
+
+        let point = CGPoint(
+            x: min(max(devicePoint.x, 0), 1),
+            y: min(max(devicePoint.y, 0), 1)
+        )
+
+        do {
+            try currentCamera.lockForConfiguration()
+            if currentCamera.isFocusPointOfInterestSupported,
+               currentCamera.isFocusModeSupported(.autoFocus) {
+                currentCamera.focusPointOfInterest = point
+                currentCamera.focusMode = .autoFocus
+            }
+            if currentCamera.isExposurePointOfInterestSupported,
+               currentCamera.isExposureModeSupported(.autoExpose) {
+                currentCamera.exposurePointOfInterest = point
+                currentCamera.exposureMode = .autoExpose
+            }
+            currentCamera.unlockForConfiguration()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func clearFinishedRecording() {
+        finishedRecording = nil
+    }
+
+    private func ensureCameraPermission() async throws {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            return
+        case .notDetermined:
+            let granted = await AVCaptureDevice.requestAccess(for: .video)
+            if !granted {
+                throw RecorderError.cameraPermissionDenied
+            }
+        default:
+            throw RecorderError.cameraPermissionDenied
+        }
+    }
+
+    private func configureSession() throws {
+        let camera = try cameraDevice(for: cameraPosition)
+
+        let input = try AVCaptureDeviceInput(device: camera)
+
+        session.beginConfiguration()
+        session.sessionPreset = .inputPriority
+        configureCameraFormat(for: camera)
+
+        guard session.canAddInput(input) else {
+            session.commitConfiguration()
+            throw RecorderError.cameraInputUnavailable
+        }
+        session.addInput(input)
+
+        guard session.canAddOutput(movieOutput) else {
+            session.commitConfiguration()
+            throw RecorderError.movieOutputUnavailable
+        }
+        session.addOutput(movieOutput)
+        videoInput = input
+        currentCamera = camera
+        updateVideoConnection()
+        session.commitConfiguration()
+        sessionConfigured = true
+        updateZoomRange(for: camera)
+        applyZoom(1, to: camera)
+        resetFocus(for: camera)
+    }
+
+    private func cameraDevice(for position: AVCaptureDevice.Position) throws -> AVCaptureDevice {
+        let deviceTypes: [AVCaptureDevice.DeviceType]
+        if position == .front {
+            deviceTypes = [.builtInTrueDepthCamera, .builtInWideAngleCamera]
+        } else {
+            deviceTypes = [.builtInTripleCamera, .builtInDualWideCamera, .builtInWideAngleCamera]
+        }
+
+        var fallbackCamera: AVCaptureDevice?
+        for deviceType in deviceTypes {
+            if let camera = AVCaptureDevice.default(deviceType, for: .video, position: position) {
+                if fallbackCamera == nil {
+                    fallbackCamera = camera
+                }
+                if supports1080p60(camera) {
+                    return camera
+                }
+            }
+        }
+
+        if let fallbackCamera {
+            return fallbackCamera
+        }
+
+        throw RecorderError.cameraUnavailable
+    }
+
+    private func supports1080p60(_ camera: AVCaptureDevice) -> Bool {
+        camera.formats.contains { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            let supports60 = format.videoSupportedFrameRateRanges.contains {
+                $0.minFrameRate <= 60 && $0.maxFrameRate >= 60
+            }
+            return dimensions.width == 1920 && dimensions.height == 1080 && supports60
+        }
+    }
+
+    private func configureCameraFormat(for camera: AVCaptureDevice) {
+        guard let format = camera.formats.first(where: { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            let supports60 = format.videoSupportedFrameRateRanges.contains {
+                $0.minFrameRate <= 60 && $0.maxFrameRate >= 60
+            }
+            return dimensions.width == 1920 && dimensions.height == 1080 && supports60
+        }) else {
+            captureFormatText = "默认帧率"
+            errorMessage = "当前摄像头不支持 1080p60，将使用系统默认帧率。"
+            return
+        }
+
+        do {
+            try camera.lockForConfiguration()
+            camera.activeFormat = format
+            let frameDuration = CMTime(value: 1, timescale: 60)
+            camera.activeVideoMinFrameDuration = frameDuration
+            camera.activeVideoMaxFrameDuration = frameDuration
+            camera.unlockForConfiguration()
+            captureFormatText = "1080p60"
+        } catch {
+            captureFormatText = "默认帧率"
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func updateZoomRange(for camera: AVCaptureDevice) {
+        let practicalMaximum = cameraPosition == .front ? 4.0 : 10.0
+        maxZoomFactor = max(1, min(CGFloat(camera.maxAvailableVideoZoomFactor), practicalMaximum))
+        zoomFactor = min(max(zoomFactor, 1), maxZoomFactor)
+    }
+
+    private func applyZoom(_ zoom: CGFloat, to camera: AVCaptureDevice) {
+        do {
+            try camera.lockForConfiguration()
+            camera.videoZoomFactor = min(max(zoom, 1), maxZoomFactor)
+            camera.unlockForConfiguration()
+            zoomFactor = camera.videoZoomFactor
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func resetFocus(for camera: AVCaptureDevice) {
+        do {
+            try camera.lockForConfiguration()
+            if camera.isFocusPointOfInterestSupported,
+               camera.isFocusModeSupported(.continuousAutoFocus) {
+                camera.focusPointOfInterest = CGPoint(x: 0.5, y: 0.5)
+                camera.focusMode = .continuousAutoFocus
+            }
+            if camera.isExposurePointOfInterestSupported,
+               camera.isExposureModeSupported(.continuousAutoExposure) {
+                camera.exposurePointOfInterest = CGPoint(x: 0.5, y: 0.5)
+                camera.exposureMode = .continuousAutoExposure
+            }
+            camera.unlockForConfiguration()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func updateVideoConnection() {
+        guard let connection = movieOutput.connection(with: .video) else {
+            return
+        }
+        if connection.isVideoOrientationSupported {
+            connection.videoOrientation = .portrait
+        }
+        if connection.isVideoMirroringSupported {
+            connection.isVideoMirrored = cameraPosition == .front
+        }
+    }
+
+    private func makeOutputURL() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KineShootVideos", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
+        return directory.appendingPathComponent("shot-\(formatter.string(from: Date())).mov")
+    }
+
+    private func saveToPhotos(_ url: URL) {
+        lastPhotoIdentifier = nil
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
+            guard status == .authorized || status == .limited else {
+                DispatchQueue.main.async {
+                    self?.statusText = "视频已保留在临时目录"
+                    self?.errorMessage = "没有照片写入权限，视频未保存到照片。"
+                }
+                return
+            }
+
+            var placeholder: PHObjectPlaceholder?
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
+                placeholder = request?.placeholderForCreatedAsset
+            } completionHandler: { success, error in
+                DispatchQueue.main.async {
+                    if success {
+                        self?.statusText = "视频已保存到照片"
+                        self?.lastPhotoIdentifier = placeholder?.localIdentifier
+                    } else {
+                        self?.statusText = "视频已保留在临时目录"
+                        self?.errorMessage = error?.localizedDescription ?? "保存视频失败。"
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension VideoRecorder: AVCaptureFileOutputRecordingDelegate {
+    func fileOutput(
+        _ output: AVCaptureFileOutput,
+        didFinishRecordingTo outputFileURL: URL,
+        from connections: [AVCaptureConnection],
+        error: Error?
+    ) {
+        DispatchQueue.main.async {
+            self.isRecording = false
+            UIApplication.shared.isIdleTimerDisabled = false
+
+            if let error {
+                self.statusText = "录像失败"
+                self.errorMessage = error.localizedDescription
+                return
+            }
+
+            self.finishedRecording = RecordedVideo(
+                id: UUID(),
+                fileURL: outputFileURL,
+                startedAt: self.recordingStartedAt ?? Date(),
+                finishedAt: Date()
+            )
+            self.saveToPhotos(outputFileURL)
+        }
+    }
+}
+
+enum RecorderError: LocalizedError {
+    case cameraPermissionDenied
+    case cameraUnavailable
+    case cameraInputUnavailable
+    case movieOutputUnavailable
+    case cannotSwitchWhileRecording
+
+    var errorDescription: String? {
+        switch self {
+        case .cameraPermissionDenied:
+            return "没有相机权限。"
+        case .cameraUnavailable:
+            return "没有找到后置相机。"
+        case .cameraInputUnavailable:
+            return "无法配置后置相机输入。"
+        case .movieOutputUnavailable:
+            return "无法配置视频输出。"
+        case .cannotSwitchWhileRecording:
+            return "录像过程中不能切换前后摄像头。"
+        }
+    }
+}
