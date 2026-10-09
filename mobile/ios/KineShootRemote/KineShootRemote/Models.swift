@@ -175,6 +175,16 @@ struct ShotRecord: Codable, Identifiable, Equatable {
     var capturedAt: Date
     var videoFileName: String?
     var photoLocalIdentifier: String?
+    var burstId: UUID? = nil
+    var burstNo: Int? = nil
+    var shotInBurst: Int? = nil
+    var burstShotCount: Int? = nil
+    var markerPairIndex: Int? = nil
+    var startMarkerTimeSeconds: Double? = nil
+    var endMarkerTimeSeconds: Double? = nil
+    var segmentStartSeconds: Double? = nil
+    var segmentEndSeconds: Double? = nil
+    var segmentStatus: String? = nil
 }
 
 struct PlayerSession: Codable, Identifiable, Equatable {
@@ -302,4 +312,39 @@ struct ShotReviewDraft: Identifiable, Equatable {
             photoLocalIdentifier: photoLocalIdentifier
         )
     }
+}
+
+enum FatigueMarkerPhase: String, Codable, Equatable {
+    case start
+    case end
+}
+
+struct FatigueMarkerEvent: Codable, Equatable, Identifiable {
+    var id: UUID = UUID()
+    var pairIndex: Int
+    var phase: FatigueMarkerPhase
+    var elapsedSeconds: Double
+    var recordedAt: Date
+}
+
+struct FatigueShotDraft: Identifiable, Equatable {
+    var id: UUID = UUID()
+    var pairIndex: Int
+    var shotResult: ShotResult = .undecided
+    var dataValidity: DataValidity = .valid
+    var invalidReasons: [InvalidReason] = []
+    var notes: String = ""
+}
+
+struct FatigueBurstDraft: Identifiable, Equatable {
+    var id: UUID = UUID()
+    var burstId: UUID = UUID()
+    var burstNo: Int
+    var shotCount: Int
+    var capturedAt: Date
+    var videoFileName: String?
+    var photoLocalIdentifier: String?
+    var markerEvents: [FatigueMarkerEvent]
+    var shots: [FatigueShotDraft]
+    var statusNote: String?
 }

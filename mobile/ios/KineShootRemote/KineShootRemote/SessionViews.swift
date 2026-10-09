@@ -583,8 +583,18 @@ struct SessionCaptureView: View {
 
     @State private var isStarting = false
     @State private var autoStopTask: Task<Void, Never>?
+    @State private var countdownTask: Task<Void, Never>?
     @State private var reviewDraft: ShotReviewDraft?
+    @State private var fatigueBurstDraft: FatigueBurstDraft?
     @State private var isEndConfirmationPresented = false
+    @State private var countdownValue: Int?
+    @State private var isRedCapturePhase = false
+    @State private var captureRedStartDate: Date?
+    @State private var markerPairIndex = 1
+    @State private var markerPhase: FatigueMarkerPhase = .start
+    @State private var markerEvents: [FatigueMarkerEvent] = []
+    @State private var lastMarkerTouchAt: Date?
+    @State private var isMarkerLimitReached = false
 
     private var session: PlayerSession? {
         store.activeSession
@@ -627,6 +637,13 @@ struct SessionCaptureView: View {
                 reviewDraft = nil
             }
         }
+        .sheet(item: $fatigueBurstDraft) { draft in
+            FatigueBurstReviewSheet(initialDraft: draft) { finalDraft in
+                saveFatigueBurst(finalDraft)
+            } onCancel: {
+                fatigueBurstDraft = nil
+            }
+        }
         .onAppear {
             bluetooth.startScanning()
             Task {
@@ -637,9 +654,15 @@ struct SessionCaptureView: View {
             guard let video else {
                 return
             }
-            var draft = store.makeReviewDraft(for: video)
-            draft.photoLocalIdentifier = recorder.lastPhotoIdentifier
-            reviewDraft = draft
+            if session?.sessionType == .fatigue {
+                var draft = store.makeFatigueBurstDraft(for: video, markerEvents: markerEvents)
+                draft.photoLocalIdentifier = recorder.lastPhotoIdentifier
+                fatigueBurstDraft = draft
+            } else {
+                var draft = store.makeReviewDraft(for: video)
+                draft.photoLocalIdentifier = recorder.lastPhotoIdentifier
+                reviewDraft = draft
+            }
         }
         .onChange(of: recorder.lastPhotoIdentifier) { identifier in
             guard let identifier else {
@@ -648,6 +671,10 @@ struct SessionCaptureView: View {
             if var draft = reviewDraft {
                 draft.photoLocalIdentifier = identifier
                 reviewDraft = draft
+            }
+            if var draft = fatigueBurstDraft {
+                draft.photoLocalIdentifier = identifier
+                fatigueBurstDraft = draft
             }
             try? store.updateLastRecordPhotoIdentifier(identifier)
         }
@@ -676,6 +703,15 @@ struct SessionCaptureView: View {
             }
             .aspectRatio(3.0 / 4.0, contentMode: .fit)
 
+            if let countdownValue {
+                Text(String(countdownValue))
+                    .font(.system(size: 128, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.7), radius: 10, x: 0, y: 4)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+
             VStack(spacing: 0) {
                 HStack(alignment: .top, spacing: 8) {
                     ShotStatusBar(session: session)
@@ -685,6 +721,15 @@ struct SessionCaptureView: View {
                 .padding(10)
 
                 Spacer(minLength: 0)
+
+                if isFatigueMode && recorder.isRecording && isRedCapturePhase && !isMarkerLimitReached {
+                    FatigueMarkerButton(
+                        pairIndex: markerPairIndex,
+                        phase: markerPhase,
+                        action: handleFatigueMarkerPress
+                    )
+                    .padding(.bottom, 8)
+                }
 
                 zoomOverlay
                     .padding(.horizontal, 10)
@@ -771,6 +816,18 @@ struct SessionCaptureView: View {
         return "未连接"
     }
 
+    private var isFatigueMode: Bool {
+        session?.sessionType == .fatigue
+    }
+
+    private func redCaptureSeconds(for session: PlayerSession) -> UInt8 {
+        session.sessionType == .fatigue ? 20 : 7
+    }
+
+    private func totalVideoSeconds(for session: PlayerSession) -> UInt64 {
+        UInt64(redCaptureSeconds(for: session)) + 3
+    }
+
     private var captureButton: some View {
         Button {
             if recorder.isRecording {
@@ -794,10 +851,15 @@ struct SessionCaptureView: View {
 
     private var editLastButton: some View {
         Button {
-            guard let last = session?.records.last else {
+            guard let session else {
                 return
             }
-            reviewDraft = store.makeEditDraft(for: last)
+            if session.sessionType == .fatigue,
+               let burstDraft = store.makeLastFatigueBurstDraft(for: session) {
+                fatigueBurstDraft = burstDraft
+            } else if let last = session.records.last {
+                reviewDraft = store.makeEditDraft(for: last)
+            }
         } label: {
             Label("编辑上一组", systemImage: "pencil.circle")
                 .font(.subheadline)
@@ -855,23 +917,31 @@ struct SessionCaptureView: View {
             bluetooth.errorMessage = "请先等待 KineShoot-Cam 连接完成。"
             return
         }
-        guard session != nil else {
+        guard let session else {
             return
         }
 
+        let redSeconds = redCaptureSeconds(for: session)
+        let totalSeconds = totalVideoSeconds(for: session)
         isStarting = true
+        resetMarkerSession()
         Task { @MainActor in
             do {
                 try await recorder.startRecording()
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                guard bluetooth.sendStartCapture() else {
+                guard bluetooth.sendStartCapture(redDurationSeconds: redSeconds) else {
                     recorder.stopRecording()
                     throw RecorderError.cameraUnavailable
+                }
+                let commandSentAt = Date()
+                let redStart = commandSentAt.addingTimeInterval(1.0)
+                captureRedStartDate = redStart
+                if session.sessionType == .fatigue {
+                    startFatigueCountdown(redSeconds: redSeconds, redStart: redStart)
                 }
 
                 autoStopTask?.cancel()
                 autoStopTask = Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 14_000_000_000)
+                    try? await Task.sleep(nanoseconds: totalSeconds * 1_000_000_000)
                     guard !Task.isCancelled else {
                         return
                     }
@@ -887,7 +957,84 @@ struct SessionCaptureView: View {
     private func stopShot() {
         autoStopTask?.cancel()
         autoStopTask = nil
+        countdownTask?.cancel()
+        countdownTask = nil
+        countdownValue = nil
+        isRedCapturePhase = false
         recorder.stopRecording()
+    }
+
+    private func startFatigueCountdown(redSeconds: UInt8, redStart: Date) {
+        countdownTask?.cancel()
+        countdownTask = Task { @MainActor in
+            let redEnd = redStart.addingTimeInterval(TimeInterval(redSeconds))
+            while !Task.isCancelled {
+                let now = Date()
+                if now < redStart {
+                    isRedCapturePhase = false
+                    countdownValue = nil
+                } else if now < redEnd {
+                    isRedCapturePhase = true
+                    let remaining = redEnd.timeIntervalSince(now)
+                    countdownValue = remaining <= 5.0 ? max(1, Int(ceil(remaining))) : nil
+                } else {
+                    isRedCapturePhase = false
+                    countdownValue = nil
+                    break
+                }
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
+        }
+    }
+
+    private func handleFatigueMarkerPress() {
+        guard isFatigueMode,
+              recorder.isRecording,
+              isRedCapturePhase,
+              !isMarkerLimitReached,
+              let redStart = captureRedStartDate else {
+            return
+        }
+        let now = Date()
+        if let lastMarkerTouchAt, now.timeIntervalSince(lastMarkerTouchAt) < 0.2 {
+            return
+        }
+        lastMarkerTouchAt = now
+
+        guard bluetooth.sendFatigueMarker(pairIndex: markerPairIndex, phase: markerPhase) else {
+            return
+        }
+        markerEvents.append(
+            FatigueMarkerEvent(
+                pairIndex: markerPairIndex,
+                phase: markerPhase,
+                elapsedSeconds: now.timeIntervalSince(redStart),
+                recordedAt: now
+            )
+        )
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        if markerPhase == .start {
+            markerPhase = .end
+        } else if markerPairIndex >= 10 {
+            isMarkerLimitReached = true
+        } else {
+            markerPhase = .start
+            markerPairIndex += 1
+        }
+    }
+
+    private func resetMarkerSession() {
+        countdownTask?.cancel()
+        countdownTask = nil
+        countdownValue = nil
+        isRedCapturePhase = false
+        captureRedStartDate = nil
+        markerPairIndex = 1
+        markerPhase = .start
+        markerEvents = []
+        lastMarkerTouchAt = nil
+        isMarkerLimitReached = false
     }
 
     private func saveReview(_ draft: ShotReviewDraft) {
@@ -908,9 +1055,26 @@ struct SessionCaptureView: View {
         }
     }
 
+    private func saveFatigueBurst(_ draft: FatigueBurstDraft) {
+        do {
+            if session?.records.contains(where: { $0.burstId == draft.burstId }) == true {
+                try store.updateFatigueBurst(draft)
+            } else {
+                try store.addFatigueBurst(draft)
+            }
+            fatigueBurstDraft = nil
+            recorder.clearFinishedRecording()
+            resetMarkerSession()
+        } catch {
+            store.errorMessage = error.localizedDescription
+        }
+    }
+
     private func endSession() {
         autoStopTask?.cancel()
         autoStopTask = nil
+        countdownTask?.cancel()
+        countdownTask = nil
         if recorder.isRecording {
             recorder.stopRecording()
         }

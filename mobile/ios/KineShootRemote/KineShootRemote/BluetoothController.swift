@@ -51,6 +51,37 @@ final class BluetoothController: NSObject, ObservableObject {
         return true
     }
 
+    @discardableResult
+    func sendStartCapture(redDurationSeconds: UInt8) -> Bool {
+        guard let peripheral, let commandCharacteristic else {
+            errorMessage = "璁惧灏氭湭杩炴帴锛屾棤娉曞紑濮?IMU 閲囬泦銆?
+            return false
+        }
+        let duration = min(max(redDurationSeconds, 1), 30)
+        peripheral.writeValue(
+            Data([0x03, duration]),
+            for: commandCharacteristic,
+            type: .withResponse
+        )
+        return true
+    }
+
+    @discardableResult
+    func sendFatigueMarker(pairIndex: Int, phase: FatigueMarkerPhase) -> Bool {
+        guard let peripheral, let commandCharacteristic else {
+            errorMessage = "璁惧灏氭湭杩炴帴锛屾棤娉曞彂閫佸叧閿偣鏍囪銆?
+            return false
+        }
+        let pair = UInt8(min(max(pairIndex, 1), 10))
+        let phaseValue: UInt8 = phase == .start ? 0 : 1
+        peripheral.writeValue(
+            Data([0x04, pair, phaseValue]),
+            for: commandCharacteristic,
+            type: .withoutResponse
+        )
+        return true
+    }
+
     private func connect(_ peripheral: CBPeripheral) {
         self.peripheral = peripheral
         peripheral.delegate = self

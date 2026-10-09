@@ -18,8 +18,8 @@ targets:
       path: KineShootRemote/Info.plist
       properties:
         CFBundleDisplayName: KineShoot
-        CFBundleShortVersionString: "1.6.1"
-        CFBundleVersion: "10"
+        CFBundleShortVersionString: "1.6.2"
+        CFBundleVersion: "11"
         LSRequiresIPhoneOS: true
         NSBluetoothAlwaysUsageDescription: "Connect to the KineShoot capture device and start IMU recording."
         NSBluetoothPeripheralUsageDescription: "Connect to the KineShoot capture device and start IMU recording."

@@ -141,14 +141,123 @@ final class PlayerSessionStore: ObservableObject {
         try saveSession(session)
     }
 
+    func makeFatigueBurstDraft(
+        for video: RecordedVideo,
+        markerEvents: [FatigueMarkerEvent]
+    ) -> FatigueBurstDraft {
+        let session = activeSession
+        let pairIndices = Set(markerEvents.map(\.pairIndex)).sorted()
+        let resolvedPairIndices = pairIndices.isEmpty ? [1] : pairIndices
+        let hasIncompleteMarker = resolvedPairIndices.contains { pairIndex in
+            let events = markerEvents.filter { $0.pairIndex == pairIndex }
+            return events.contains { $0.phase == .start } != events.contains { $0.phase == .end }
+        }
+        let shots = resolvedPairIndices.map { FatigueShotDraft(pairIndex: $0) }
+        return FatigueBurstDraft(
+            burstNo: nextBurstNo(in: session),
+            shotCount: shots.count,
+            capturedAt: video.startedAt,
+            videoFileName: video.fileURL.lastPathComponent,
+            photoLocalIdentifier: nil,
+            markerEvents: markerEvents,
+            shots: shots,
+            statusNote: hasIncompleteMarker ? "marker_incomplete" : nil
+        )
+    }
+
+    func addFatigueBurst(_ draft: FatigueBurstDraft) throws {
+        guard var session = activeSession, session.sessionType == .fatigue else {
+            throw StoreError.noActiveSession
+        }
+        let records = makeFatigueRecords(from: draft, startingShotNo: session.nextShotNo, burstNo: draft.burstNo)
+        session.records.append(contentsOf: records)
+        activeSession = session
+        try saveSession(session)
+    }
+
+    func updateFatigueBurst(_ draft: FatigueBurstDraft) throws {
+        guard var session = activeSession, session.sessionType == .fatigue else {
+            throw StoreError.noActiveSession
+        }
+        let matchingIndices = session.records.indices.filter {
+            session.records[$0].burstId == draft.burstId
+        }
+        guard let firstIndex = matchingIndices.first else {
+            throw StoreError.recordNotFound
+        }
+        let startingShotNo = session.records[firstIndex].shotNo
+        let replacement = makeFatigueRecords(from: draft, startingShotNo: startingShotNo, burstNo: draft.burstNo)
+        for index in matchingIndices.reversed() {
+            session.records.remove(at: index)
+        }
+        session.records.insert(contentsOf: replacement, at: firstIndex)
+        for index in session.records.indices {
+            session.records[index].shotNo = index + 1
+        }
+        activeSession = session
+        try saveSession(session)
+    }
+
+    func makeLastFatigueBurstDraft(for session: PlayerSession) -> FatigueBurstDraft? {
+        guard let burstId = session.records.last?.burstId else {
+            return nil
+        }
+        let records = session.records
+            .filter { $0.burstId == burstId }
+            .sorted { ($0.shotInBurst ?? 0) < ($1.shotInBurst ?? 0) }
+        guard let first = records.first else {
+            return nil
+        }
+        let shots = records.map { record in
+            FatigueShotDraft(
+                pairIndex: record.markerPairIndex ?? record.shotInBurst ?? 1,
+                shotResult: record.shotResult,
+                dataValidity: record.dataValidity,
+                invalidReasons: record.invalidReasons,
+                notes: record.notes
+            )
+        }
+        let markerEvents = records.compactMap { record -> [FatigueMarkerEvent] in
+            var events: [FatigueMarkerEvent] = []
+            if let start = record.startMarkerTimeSeconds, let pair = record.markerPairIndex {
+                events.append(FatigueMarkerEvent(pairIndex: pair, phase: .start, elapsedSeconds: start, recordedAt: record.capturedAt))
+            }
+            if let end = record.endMarkerTimeSeconds, let pair = record.markerPairIndex {
+                events.append(FatigueMarkerEvent(pairIndex: pair, phase: .end, elapsedSeconds: end, recordedAt: record.capturedAt))
+            }
+            return events
+        }.flatMap { $0 }
+        return FatigueBurstDraft(
+            burstId: burstId,
+            burstNo: first.burstNo ?? 1,
+            shotCount: shots.count,
+            capturedAt: first.capturedAt,
+            videoFileName: first.videoFileName,
+            photoLocalIdentifier: first.photoLocalIdentifier,
+            markerEvents: markerEvents,
+            shots: shots,
+            statusNote: first.segmentStatus
+        )
+    }
+
+    func nextBurstNo(in session: PlayerSession?) -> Int {
+        let existing = Set(session?.records.compactMap { $0.burstNo } ?? [])
+        return (existing.max() ?? 0) + 1
+    }
+
     func updateLastRecordPhotoIdentifier(_ identifier: String) throws {
         guard var session = activeSession,
-              var last = session.records.last,
+              let last = session.records.last,
               last.photoLocalIdentifier == nil else {
             return
         }
-        last.photoLocalIdentifier = identifier
-        session.records[session.records.count - 1] = last
+        if let burstId = last.burstId {
+            for index in session.records.indices where session.records[index].burstId == burstId {
+                session.records[index].photoLocalIdentifier = identifier
+            }
+        } else {
+            session.records[session.records.count - 1].photoLocalIdentifier = identifier
+        }
         activeSession = session
         try saveSession(session)
     }
@@ -358,7 +467,10 @@ final class PlayerSessionStore: ObservableObject {
             "is_test", "session_status", "shot_no", "planned_action",
             "planned_distance", "action", "distance", "orientation",
             "shot_result", "data_valid", "invalid_reasons", "notes",
-            "captured_at", "video_file_name", "video_photo_local_identifier"
+            "captured_at", "video_file_name", "video_photo_local_identifier",
+            "burst_id", "burst_no", "shot_in_burst", "burst_shot_count",
+            "marker_pair_index", "marker_start_time_s", "marker_end_time_s",
+            "segment_start_s", "segment_end_s", "segment_status"
         ].joined(separator: ",")
 
         let rows = session.records.map { record -> String in
@@ -381,10 +493,62 @@ final class PlayerSessionStore: ObservableObject {
                 record.notes,
                 Self.iso8601.string(from: record.capturedAt),
                 record.videoFileName ?? "",
-                record.photoLocalIdentifier ?? ""
+                record.photoLocalIdentifier ?? "",
+                record.burstId?.uuidString ?? "",
+                record.burstNo.map { String($0) } ?? "",
+                record.shotInBurst.map { String($0) } ?? "",
+                record.burstShotCount.map { String($0) } ?? "",
+                record.markerPairIndex.map { String($0) } ?? "",
+                record.startMarkerTimeSeconds.map { String(format: "%.3f", $0) } ?? "",
+                record.endMarkerTimeSeconds.map { String(format: "%.3f", $0) } ?? "",
+                record.segmentStartSeconds.map { String(format: "%.3f", $0) } ?? "",
+                record.segmentEndSeconds.map { String(format: "%.3f", $0) } ?? "",
+                record.segmentStatus ?? ""
             ].map(Self.csvEscape).joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n") + "\n"
+    }
+
+    private func makeFatigueRecords(
+        from draft: FatigueBurstDraft,
+        startingShotNo: Int,
+        burstNo: Int
+    ) -> [ShotRecord] {
+        let session = activeSession
+        return draft.shots.enumerated().map { offset, shot in
+            let pairIndex = shot.pairIndex
+            let startMarker = draft.markerEvents.first {
+                $0.pairIndex == pairIndex && $0.phase == .start
+            }?.elapsedSeconds
+            let endMarker = draft.markerEvents.first {
+                $0.pairIndex == pairIndex && $0.phase == .end
+            }?.elapsedSeconds
+            return ShotRecord(
+                shotNo: startingShotNo + offset,
+                plannedAction: session?.fixedAction,
+                plannedDistance: session?.fixedDistance,
+                action: session?.fixedAction ?? .shot,
+                distance: session?.fixedDistance ?? .free,
+                orientation: .facingBasket,
+                shotResult: shot.shotResult,
+                dataValidity: shot.dataValidity,
+                invalidReasons: shot.invalidReasons,
+                notes: shot.notes,
+                capturedAt: draft.capturedAt,
+                videoFileName: draft.videoFileName,
+                photoLocalIdentifier: draft.photoLocalIdentifier,
+                burstId: draft.burstId,
+                burstNo: burstNo,
+                shotInBurst: offset + 1,
+                burstShotCount: draft.shots.count,
+                markerPairIndex: pairIndex,
+                startMarkerTimeSeconds: startMarker,
+                endMarkerTimeSeconds: endMarker,
+                segmentStartSeconds: nil,
+                segmentEndSeconds: nil,
+                segmentStatus: draft.statusNote
+            )
+        }
     }
 
     private func saveRegistry() throws {
