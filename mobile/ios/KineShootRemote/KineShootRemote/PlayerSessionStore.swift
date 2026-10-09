@@ -474,7 +474,7 @@ final class PlayerSessionStore: ObservableObject {
         ].joined(separator: ",")
 
         let rows = session.records.map { record -> String in
-            [
+            let values: [String] = [
                 session.playerId,
                 session.id,
                 session.sessionType.rawValue,
@@ -495,16 +495,17 @@ final class PlayerSessionStore: ObservableObject {
                 record.videoFileName ?? "",
                 record.photoLocalIdentifier ?? "",
                 record.burstId?.uuidString ?? "",
-                record.burstNo.map { String($0) } ?? "",
-                record.shotInBurst.map { String($0) } ?? "",
-                record.burstShotCount.map { String($0) } ?? "",
-                record.markerPairIndex.map { String($0) } ?? "",
-                record.startMarkerTimeSeconds.map { String(format: "%.3f", $0) } ?? "",
-                record.endMarkerTimeSeconds.map { String(format: "%.3f", $0) } ?? "",
-                record.segmentStartSeconds.map { String(format: "%.3f", $0) } ?? "",
-                record.segmentEndSeconds.map { String(format: "%.3f", $0) } ?? "",
+                Self.optionalInt(record.burstNo),
+                Self.optionalInt(record.shotInBurst),
+                Self.optionalInt(record.burstShotCount),
+                Self.optionalInt(record.markerPairIndex),
+                Self.optionalSeconds(record.startMarkerTimeSeconds),
+                Self.optionalSeconds(record.endMarkerTimeSeconds),
+                Self.optionalSeconds(record.segmentStartSeconds),
+                Self.optionalSeconds(record.segmentEndSeconds),
                 record.segmentStatus ?? ""
-            ].map(Self.csvEscape).joined(separator: ",")
+            ]
+            return values.map(Self.csvEscape).joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n") + "\n"
     }
@@ -549,6 +550,14 @@ final class PlayerSessionStore: ObservableObject {
                 segmentStatus: draft.statusNote
             )
         }
+    }
+
+    private static func optionalInt(_ value: Int?) -> String {
+        value.map { String($0) } ?? ""
+    }
+
+    private static func optionalSeconds(_ value: Double?) -> String {
+        value.map { String(format: "%.3f", $0) } ?? ""
     }
 
     private func saveRegistry() throws {

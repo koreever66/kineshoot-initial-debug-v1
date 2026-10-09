@@ -6,7 +6,7 @@ final class BluetoothController: NSObject, ObservableObject {
     static let commandUUID = CBUUID(string: "6b1d0002-9a3f-4d2a-8f6f-6b1d00000002")
 
     @Published private(set) var isReady = false
-    @Published private(set) var statusText = "正在检查蓝牙"
+    @Published private(set) var statusText = "Checking Bluetooth"
     @Published private(set) var deviceName: String?
     @Published var errorMessage: String?
 
@@ -23,7 +23,7 @@ final class BluetoothController: NSObject, ObservableObject {
     func startScanning() {
         errorMessage = nil
         guard central.state == .poweredOn else {
-            statusText = "等待蓝牙可用"
+            statusText = "Waiting for Bluetooth"
             return
         }
 
@@ -33,7 +33,7 @@ final class BluetoothController: NSObject, ObservableObject {
         }
 
         isReady = false
-        statusText = "正在查找 KineShoot-Cam"
+        statusText = "Scanning for KineShoot-Cam"
         central.scanForPeripherals(
             withServices: [Self.serviceUUID],
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: false]
@@ -43,7 +43,7 @@ final class BluetoothController: NSObject, ObservableObject {
     @discardableResult
     func sendStartCapture() -> Bool {
         guard let peripheral, let commandCharacteristic else {
-            errorMessage = "设备尚未连接，无法开始 IMU 采集。"
+            errorMessage = "Device not connected; cannot start IMU capture."
             return false
         }
 
@@ -54,7 +54,7 @@ final class BluetoothController: NSObject, ObservableObject {
     @discardableResult
     func sendStartCapture(redDurationSeconds: UInt8) -> Bool {
         guard let peripheral, let commandCharacteristic else {
-            errorMessage = "璁惧灏氭湭杩炴帴锛屾棤娉曞紑濮?IMU 閲囬泦銆?
+            errorMessage = "Device not connected; cannot start IMU capture."
             return false
         }
         let duration = min(max(redDurationSeconds, 1), 30)
@@ -69,7 +69,7 @@ final class BluetoothController: NSObject, ObservableObject {
     @discardableResult
     func sendFatigueMarker(pairIndex: Int, phase: FatigueMarkerPhase) -> Bool {
         guard let peripheral, let commandCharacteristic else {
-            errorMessage = "璁惧灏氭湭杩炴帴锛屾棤娉曞彂閫佸叧閿偣鏍囪銆?
+            errorMessage = "Device not connected; cannot send fatigue marker."
             return false
         }
         let pair = UInt8(min(max(pairIndex, 1), 10))
@@ -87,7 +87,7 @@ final class BluetoothController: NSObject, ObservableObject {
         peripheral.delegate = self
         central.stopScan()
         isReady = false
-        statusText = "正在连接 \(peripheral.name ?? "KineShoot")"
+        statusText = "Connecting to \(peripheral.name ?? "KineShoot")"
         central.connect(peripheral, options: nil)
     }
 
@@ -108,14 +108,14 @@ extension BluetoothController: CBCentralManagerDelegate {
             startScanning()
         case .poweredOff:
             isReady = false
-            statusText = "蓝牙已关闭"
+            statusText = "Bluetooth is off"
         case .unauthorized:
             isReady = false
-            statusText = "没有蓝牙权限"
-            errorMessage = "请在系统设置中允许 KineShoot 使用蓝牙。"
+            statusText = "Bluetooth permission denied"
+            errorMessage = "Allow KineShoot to use Bluetooth in system settings."
         default:
             isReady = false
-            statusText = "蓝牙暂不可用"
+            statusText = "Bluetooth unavailable"
         }
     }
 
@@ -134,7 +134,7 @@ extension BluetoothController: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        statusText = "正在配置 KineShoot"
+        statusText = "Configuring KineShoot"
         peripheral.discoverServices([Self.serviceUUID])
     }
 
@@ -144,7 +144,7 @@ extension BluetoothController: CBCentralManagerDelegate {
         error: Error?
     ) {
         isReady = false
-        statusText = "连接失败"
+        statusText = "Connection failed"
         errorMessage = error?.localizedDescription
         scheduleReconnect()
     }
@@ -157,7 +157,7 @@ extension BluetoothController: CBCentralManagerDelegate {
         self.peripheral = peripheral
         commandCharacteristic = nil
         isReady = false
-        statusText = "设备已断开"
+        statusText = "Device disconnected"
         scheduleReconnect()
     }
 }
@@ -170,7 +170,7 @@ extension BluetoothController: CBPeripheralDelegate {
         }
 
         guard let service = peripheral.services?.first(where: { $0.uuid == Self.serviceUUID }) else {
-            statusText = "没有找到 KineShoot 服务"
+            statusText = "KineShoot service not found"
             return
         }
 
@@ -193,6 +193,6 @@ extension BluetoothController: CBPeripheralDelegate {
 
         isReady = commandCharacteristic != nil
         deviceName = peripheral.name
-        statusText = isReady ? "已连接，可以开始采集" : "命令通道不可用"
+        statusText = isReady ? "Connected and ready" : "Command channel unavailable"
     }
 }
